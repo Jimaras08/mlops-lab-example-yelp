@@ -8,7 +8,7 @@ Usage:
 sys.path.insert(0, '.../Yelp_Dataset/')
 from internal.yelp_raw_data import YelpRawData
 
-with YelpRawData('/Users/laszlosragner/work/Yelp_Dataset/data/raw/') as yrd:
+with YelpRawData('.../Yelp_Dataset/data/raw/') as yrd:
     for v in islice(yrd, 10):
         print(v)
 """
