@@ -44,7 +44,7 @@ class YelpRawData:
             reader = csv.reader(io.TextIOWrapper(tar.extractfile(csvMember), encoding='utf-8'))
             for reviewId, line in enumerate(reader):
                 yield {
-                    'reviewId': reviewId,
+                    'yelpId': f'{self.data[0]}{self.mode[:2]}{reviewId:06}',
                     'score': line[0],
                     'text': line[1].replace('\\"', '"').replace('\\n', '\n')
                 }
