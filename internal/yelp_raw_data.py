@@ -1,3 +1,4 @@
+import os
 import io
 import csv
 import tarfile
@@ -17,6 +18,10 @@ with YelpRawData('.../Yelp_Dataset/data/raw/') as yrd:
 class YelpRawData:
 
     def __init__(self, location='data/raw', data='polarity', mode='train'):
+        if data not in ['polarity', 'full']:
+            raise ValueError(f'Unknown data type {data}')
+        if mode not in ['train', 'test']:
+            raise ValueError(f'Unknown mode type {mode}')
         self.location = location
         self.data = data
         self.mode = mode
@@ -29,6 +34,8 @@ class YelpRawData:
 
     def __iter__(self):
         rawFile = f'{self.location}/yelp_review_{self.data}_csv.tgz'
+        if not os.path.exists(rawFile):
+            raise ValueError('{rawFile} does not exist, check the location or run get_raw_data.sh to download it from S3.')
         with tarfile.open(rawFile, "r:*") as tar:
             for tarInfo in tar.getmembers():
                 if tarInfo.name == f'yelp_review_{self.data}_csv/{self.mode}.csv':
