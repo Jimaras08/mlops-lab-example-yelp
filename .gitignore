@@ -88,3 +88,7 @@ target/
 
 # Mypy cache
 .mypy_cache/
+
+mlruns
+lightning_logs
+.vector_cache
