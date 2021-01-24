@@ -92,6 +92,7 @@ if __name__ == "__main__":
                  unk_init = torch.Tensor.zero_)
 
     LABEL.build_vocab(train_ds)
+
     PAD_IDX = TEXT.vocab.stoi[TEXT.pad_token] # padding
     INPUT_DIM = len(TEXT.vocab)
 
@@ -104,6 +105,16 @@ if __name__ == "__main__":
         sort_within_batch = True,
         device = device)
     
+    # Create model
+    model = LSTM_net(INPUT_DIM,
+            EMBEDDING_DIM, 
+            HIDDEN_DIM, 
+            OUTPUT_DIM,
+            N_LAYERS, 
+            BIDIRECTIONAL, 
+            DROPOUT,
+            PAD_IDX)
+
     # Add pretrained embeddings
     pretrained_embeddings = TEXT.vocab.vectors
     model.embedding.weight.data.copy_(pretrained_embeddings)
