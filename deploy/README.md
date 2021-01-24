@@ -110,23 +110,24 @@ helm install \
     --set backendStore.postgres.database=mlflow \
     --set prometheus.expose=yes \
     --set defaultArtifactRoot=${BUCKET} \
+    --set image.repository=larribas/mlflow \
+    --set image.tag=1.9.1 \
     --set service.type=LoadBalancer
 # (after a while)
 # kubectl -n mlflow get all                                                                               
-# 
 # NAME                          READY   STATUS    RESTARTS   AGE
-# pod/mlflow-6df5755d7f-wkhqd   1/1     Running   0          4m19s
+# pod/mlflow-7686588c6b-p9jlm   1/1     Running   0          3m29s
 # 
-# NAME             TYPE           CLUSTER-IP    EXTERNAL-IP   PORT(S)          AGE
-# service/mlflow   LoadBalancer   10.104.9.69   34.90.15.80   5000:31042/TCP   4m24s
+# NAME             TYPE           CLUSTER-IP     EXTERNAL-IP     PORT(S)          AGE
+# service/mlflow   LoadBalancer   10.104.0.146   34.91.123.207   5000:31243/TCP   3m29s
 # 
 # NAME                     READY   UP-TO-DATE   AVAILABLE   AGE
-# deployment.apps/mlflow   1/1     1            1           4m27s
+# deployment.apps/mlflow   1/1     1            1           3m29s
 # 
 # NAME                                DESIRED   CURRENT   READY   AGE
-# replicaset.apps/mlflow-6df5755d7f   1         1         1       4m28s
+# replicaset.apps/mlflow-7686588c6b   1         1         1       3m29s
 ```
-Note `EXTERNAL-IP`: to access the MLFlow service, use `http://34.90.15.80:5000`
+Note `EXTERNAL-IP`: to access the MLFlow service, use `http://34.91.123.207:5000`
 
 
 # Use MLFlow to train models

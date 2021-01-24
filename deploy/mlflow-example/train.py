@@ -16,7 +16,6 @@ import mlflow
 import mlflow.sklearn
 
 
-#mlflow.set_tracking_uri("http://34.90.15.80:5000/")
 
 def eval_metrics(actual, pred):
     rmse = np.sqrt(mean_squared_error(actual, pred))

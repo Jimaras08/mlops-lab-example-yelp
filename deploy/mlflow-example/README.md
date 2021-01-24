@@ -8,7 +8,7 @@ First, set up your environment:
 # push model artifacts to the remote object storage):
 export GOOGLE_APPLICATION_CREDENTIALS=/tmp/developers-key.json
 # path to external IP of MLFlow service:
-export MLFLOW_TRACKING_URI=http://34.90.15.80:5000
+export MLFLOW_TRACKING_URI=http://34.91.123.207:5000
 ```
 
 Now, train the model:
