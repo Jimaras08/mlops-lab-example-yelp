@@ -25,6 +25,7 @@ sys.path.append('..')
 os.chdir('..') # FIXME: Relative paths
 
 from src.data.utils import DataFrameDataset, setup_logging
+from models.lstm import LSTM_net
 
 DATASET_PATH = '../notebooks/dataset_split.pkl'
 MAX_VOCAB_SIZE = 20000
