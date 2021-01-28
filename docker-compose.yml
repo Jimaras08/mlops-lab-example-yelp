@@ -1,0 +1,11 @@
+services:
+  train_yelp:
+    # Base Image
+    image: yelp_dataset:v1.0
+    # If fails, then restart
+    restart: always
+    #  Map volume to a specific directory for persistence of data in mongodb
+    volumes:
+      - ~/Yelp_Dataset:/appl/
+    # Command to run when container starts
+    command: "python3 src/train_model_lstm.py"

@@ -1,0 +1,7 @@
+dataset_split.pkl
+lightning_logs
+mlruns
+notebooks
+.vector_cache
+.git
+src/.vector_cache

@@ -20,14 +20,10 @@ import os
 import os
 import sys
 
-import sys
-sys.path.append('..')
-os.chdir('..') # FIXME: Relative paths
+from utils import DataFrameDataset, setup_logging
+from lstm import LSTM_net
 
-from src.data.utils import DataFrameDataset, setup_logging
-from models.lstm import LSTM_net
-
-DATASET_PATH = '../notebooks/dataset_split.pkl'
+DATASET_PATH = 'dataset_split.pkl'
 MAX_VOCAB_SIZE = 20000
 BATCH_SIZE = 128
 CUDA_DEVICE = 'cuda:2'

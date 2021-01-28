@@ -1,0 +1,10 @@
+name: Yelp Dataset Classification
+
+docker_env:
+    image: yelp_dataset:v1.0
+
+entry_points:
+  main:
+    parameters:
+      data_file: dataset_split.pkl
+    command: "python3 train_model_lstm.py"

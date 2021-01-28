@@ -1,6 +1,3 @@
-# local package
--e .
-
 # external requirements
 click
 Sphinx
@@ -14,3 +11,4 @@ torch==1.6
 torchtext==0.7
 mlflow
 pytorch-lightning
+spacy
