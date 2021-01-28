@@ -55,8 +55,11 @@ if __name__ == "__main__":
     print(os.getcwd())
 
     # Create text and label fields
-    TEXT = data.Field(tokenize = 'spacy', include_lengths = True)
-    LABEL = data.LabelField(dtype = torch.float)
+    TEXT = data.Field(tokenize = 'spacy', include_lengths = True, batch_first=True)
+    LABEL = data.LabelField(dtype = torch.float, batch_first=True)
+
+   # TEXT = data.Field(tokenize = 'spacy', include_lengths = True)
+   # LABEL = data.LabelField(dtype = torch.float)
 
     # Load dataset
     logging.info("Reading dataset and splitting into train/val")
@@ -97,7 +100,7 @@ if __name__ == "__main__":
 
     device = torch.device(f'{CUDA_DEVICE}' if torch.cuda.is_available() else 'cpu')
     train_iterator, valid_iterator = data.BucketIterator.splits(
-        (train_ds, val_ds), 
+        (train_ds, val_ds),
         batch_size = BATCH_SIZE,
         sort_within_batch = True,
         device = device)
@@ -124,7 +127,7 @@ if __name__ == "__main__":
         dill.dump(TEXT, f)
 
     #  NN to GPU
-    model.to(device) 
+    model.to(device)
 
     # Loss and optimizer
     trainer = pl.Trainer(gpus=1, max_epochs=20, progress_bar_refresh_rate=20)

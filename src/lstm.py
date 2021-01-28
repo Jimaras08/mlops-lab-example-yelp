@@ -14,7 +14,7 @@ class LSTM_net(pl.LightningModule):
         
         super().__init__()
         
-        self.embedding = nn.Embedding(vocab_size, embedding_dim, padding_idx = pad_idx)
+        self.embedding = nn.Embedding(vocab_size, embedding_dim)
         
         self.rnn = nn.LSTM(embedding_dim,
                            hidden_dim,
@@ -39,7 +39,7 @@ class LSTM_net(pl.LightningModule):
         embedded = self.embedding(text) 
                 
         # Pack padded sequences sequence
-        packed_embedded = nn.utils.rnn.pack_padded_sequence(embedded, text_lengths)
+        packed_embedded = nn.utils.rnn.pack_padded_sequence(embedded, text_lengths, batch_first=True)
         
         # hidden = (num layers * num directions, batch size, hid dim)
         # cell = (num layers * num directions, batch size, hid dim)
@@ -74,8 +74,8 @@ class LSTM_net(pl.LightningModule):
         acc = accuracy(predictions, batch.label)
 
         # Use the current PyTorch logger
-        # self.log("train_loss", loss, on_epoch=True)
-        # self.log("acc", acc, on_epoch = True)
+        self.log("train_loss", loss, on_epoch=True)
+        self.log("train acc", acc, on_epoch = True)
 
         return loss
     
@@ -105,6 +105,11 @@ class LSTM_net(pl.LightningModule):
 
             loss = criterion(predictions, batch.label)
             acc = accuracy(predictions, batch.label)
+
+            # Use the current PyTorch logger
+            self.log("val_loss", loss, on_epoch=True)
+            self.log("val acc", acc, on_epoch = True)
+
             return loss
 
     def configure_optimizers(self):
