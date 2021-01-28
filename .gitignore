@@ -92,3 +92,6 @@ target/
 mlruns
 lightning_logs
 .vector_cache
+*.pkl
+developers-key.json
+yelp_academic_dataset_review.json

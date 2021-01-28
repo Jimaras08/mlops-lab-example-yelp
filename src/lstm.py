@@ -23,11 +23,14 @@ class LSTM_net(pl.LightningModule):
                            dropout=dropout,
                            batch_first=True)
         
-        self.fc1 = nn.Linear(hidden_dim * 2, hidden_dim)
+        self.fc1 = nn.Linear(hidden_dim * 2, output_dim)
         
-        self.fc2 = nn.Linear(hidden_dim, 1)
+        #activation function
+        self.act = nn.Sigmoid()
+
+       # self.fc2 = nn.Linear(hidden_dim, 1)
         
-        self.dropout = nn.Dropout(dropout)
+       #  self.dropout = nn.Dropout(dropout)
         
     def forward(self, text, text_lengths):
 
@@ -48,9 +51,15 @@ class LSTM_net(pl.LightningModule):
         # and apply dropout
         # hidden = (batch size, hid dim * num directions)
 
-        hidden = self.dropout(torch.cat((hidden[-2,:,:], hidden[-1,:,:]), dim = 1))
-        output = self.fc1(hidden)
-        output = self.dropout(self.fc2(output))
+        #hidden = self.dropout(torch.cat((hidden[-2,:,:], hidden[-1,:,:]), dim = 1))
+        hidden = torch.cat((hidden[-2,:,:], hidden[-1,:,:]), dim = 1)
+
+        # activation function
+
+        dense_outputs=self.fc1(hidden)
+        output=self.act(dense_outputs)
+        #output = self.fc1(hidden)
+        #output = self.dropout(self.fc2(output))
 
         return output
 
