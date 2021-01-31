@@ -5,7 +5,6 @@ Script for prediction
 import spacy
 import dill
 
-import torch
 nlp = spacy.load('en')
 MODEL_PATH = '....'
 DEVICE = 'cuda:2'
