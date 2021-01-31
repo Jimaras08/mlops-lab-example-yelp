@@ -6,7 +6,7 @@ Adapted from https://www.analyticsvidhya.com/blog/2020/01/first-text-classificat
 import torch.nn as nn
 import pytorch_lightning as pl
 import torch
-from pytorch_lightning.metrics.functional import accuracy
+from pytorch_lightning.metrics.functional import accuracy, auroc
 
 class LSTM_net(pl.LightningModule):
     def __init__(self, vocab_size, embedding_dim, hidden_dim, output_dim, n_layers,
@@ -30,13 +30,13 @@ class LSTM_net(pl.LightningModule):
 
        # self.fc2 = nn.Linear(hidden_dim, 1)
         
-       #  self.dropout = nn.Dropout(dropout)
+        self.dropout = nn.Dropout(dropout)
         
     def forward(self, text, text_lengths):
 
         # text Dim: (sent len, batch size)
         # embedded dim: (sent len, batch size, emb dim)
-        embedded = self.embedding(text) 
+        embedded = self.embedding(text)
                 
         # Pack padded sequences sequence
         packed_embedded = nn.utils.rnn.pack_padded_sequence(embedded, text_lengths, batch_first=True)
@@ -56,7 +56,8 @@ class LSTM_net(pl.LightningModule):
 
         # activation function
 
-        dense_outputs=self.fc1(hidden)
+        dense_outputs=self.dropout(self.fc1(hidden))
+
         output=self.act(dense_outputs)
         #output = self.fc1(hidden)
         #output = self.dropout(self.fc2(output))
@@ -71,9 +72,14 @@ class LSTM_net(pl.LightningModule):
         predictions = self(text, text_lengths).squeeze()
        # print("train predictions", predictions)
 
-        loss = criterion(predictions, batch.label)
+        loss = criterion(predictions, batch.target)
        # print(loss)
-        acc = accuracy(predictions, batch.label)
+        acc = accuracy(torch.round(predictions), batch.target)
+        auc = auroc(predictions, batch.target)
+
+        self.log("train_acc", acc, on_epoch = True)
+        self.log("train_loss", loss, on_epoch = True)
+        self.log("train_auroc", auc, on_epoch=True)
 
         return loss
     
@@ -85,9 +91,9 @@ class LSTM_net(pl.LightningModule):
 
         predictions = self(text, text_lengths).squeeze(1)
 
-        loss = criterion(predictions, batch.label)
+        loss = criterion(predictions, batch.target)
         print(loss)
-        acc = accuracy(predictions, batch.label)
+        acc = accuracy(predictions, batch.target)
         # self.log_dict({'test_loss': loss, 'test_acc': acc})
         return loss
 
@@ -100,12 +106,15 @@ class LSTM_net(pl.LightningModule):
         predictions = self(text, text_lengths).squeeze()
        # print("val predictions", predictions)
 
-        loss = criterion(predictions, batch.label)
+        loss = criterion(predictions, batch.target)
        # print(loss)
-        acc = accuracy(predictions, batch.label)
+        acc = accuracy(torch.round(predictions), batch.target)
+        auc = auroc(predictions, batch.target)
 
         # Use the current PyTorch logger
         self.log("val_acc", acc, on_epoch = True)
+        self.log("val_loss", loss, on_epoch = True)
+        self.log("val_auc", auc, on_epoch = True)
 
         return loss
 

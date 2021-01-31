@@ -89,7 +89,7 @@ def main(args):
     logging.info("Finished reading dataset and splitting into train/val")
 
     # Tokenize data and create a data loader for the batch iterators
-    fields = [('text', TEXT), ('label', LABEL)]
+    fields = [('text', TEXT), ('target', LABEL)]
 
     logging.info("Tokenizing train and validation data")
 
