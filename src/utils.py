@@ -7,6 +7,7 @@ Utils for processing input data
 import logging
 from torchtext import data
 
+
 class DataFrameDataset(data.Dataset):
 
     def __init__(self, df, fields, is_test=False, **kwargs):

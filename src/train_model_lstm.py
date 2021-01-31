@@ -150,7 +150,7 @@ def main(args):
 
     # Loss and optimizer
     trainer = pl.Trainer(gpus=1, max_epochs=20, progress_bar_refresh_rate=20,
-                         callbacks=[lr_logger, early_stopping, checkpoint_callback],
+                         callbacks=[lr_logger, early_stopping],
                          checkpoint_callback=True)
 
     # Auto log all MLflow entities
