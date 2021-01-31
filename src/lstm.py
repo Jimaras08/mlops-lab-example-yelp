@@ -75,27 +75,21 @@ class LSTM_net(pl.LightningModule):
        # print(loss)
         acc = accuracy(predictions, batch.label)
 
-        # Use the current PyTorch logger
-        self.log("train_loss", loss, on_epoch=True)
-        self.log("train acc", acc, on_epoch = True)
-
         return loss
     
     def test_step(self, batch, batch_nb):
 
-        with torch.no_grad():
+        text, text_lengths = batch.text
 
-            text, text_lengths = batch.text
+        criterion = nn.BCELoss()
 
-            criterion = nn.BCELoss()
+        predictions = self(text, text_lengths).squeeze(1)
 
-            predictions = self(text, text_lengths).squeeze(1)
-
-            loss = criterion(predictions, batch.label)
-            print(loss)
-            acc = accuracy(predictions, batch.label)
-            # self.log_dict({'test_loss': loss, 'test_acc': acc})
-            return loss
+        loss = criterion(predictions, batch.label)
+        print(loss)
+        acc = accuracy(predictions, batch.label)
+        # self.log_dict({'test_loss': loss, 'test_acc': acc})
+        return loss
 
     def validation_step(self, batch, batch_nb):
 
@@ -111,8 +105,7 @@ class LSTM_net(pl.LightningModule):
         acc = accuracy(predictions, batch.label)
 
         # Use the current PyTorch logger
-        self.log("val_loss", loss, on_epoch=True)
-        self.log("val acc", acc, on_epoch = True)
+        self.log("val_acc", acc, on_epoch = True)
 
         return loss
 
