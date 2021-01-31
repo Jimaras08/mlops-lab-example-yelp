@@ -4,4 +4,4 @@ torch==1.6
 torchtext==0.7
 mlflow==1.13.1
 pytorch-lightning==1.1.6
-spacy
+google-cloud-storage==1.35.0
