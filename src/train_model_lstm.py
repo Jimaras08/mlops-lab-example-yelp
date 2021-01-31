@@ -14,23 +14,37 @@ import time
 import mlflow.pytorch
 from mlflow.tracking import MlflowClient
 import pytorch_lightning as pl
+from pytorch_lightning.callbacks.early_stopping import EarlyStopping
+from pytorch_lightning.callbacks import ModelCheckpoint
+from pytorch_lightning.callbacks import LearningRateMonitor
+import argparse
+import logging
 
 import os
 
 import os
 import sys
+from pathlib import Path
+from src.utils import DataFrameDataset, setup_logging
+from src.lstm import LSTM_net
 
-from utils import DataFrameDataset, setup_logging
-from lstm import LSTM_net
 
-DATASET_PATH = 'dataset_split.pkl'
+logger = logging.getLogger(__file__)
+
+def get_parser():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--dataset_path', type=Path, default=Path('/data/dataset_split.pkl'))
+    parser.add_argument('--cuda_device', type=str, default="cuda:2")
+    return parser
+
+
 MAX_VOCAB_SIZE = 20000
 BATCH_SIZE = 128
-CUDA_DEVICE = 'cuda:2'
 
 # Declare hyperparameters
-num_epochs = 25
-learning_rate = 0.001
+# TODO: use and log these params
+# num_epochs = 25
+# learning_rate = 0.001
 
 EMBEDDING_DIM = 200
 HIDDEN_DIM = 128
@@ -38,21 +52,18 @@ OUTPUT_DIM = 1
 N_LAYERS = 2
 BIDIRECTIONAL = True
 DROPOUT = 0.2
+SEED = 42
 
-TRACKING_URI = 'http://34.91.123.207:5000/'
-
-mlflow.set_tracking_uri(TRACKING_URI)
+# export MLFLOW_TRACKING_URI=http://34.91.123.207:5000/
 
 
-if __name__ == "__main__":
-    SEED = 42
+def main(args):
+    logger.info(f"Args: {args}")
+    dataset_path = args.dataset_path
 
     torch.manual_seed(SEED)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
-    logger = setup_logging()
-
-    print(os.getcwd())
 
     # Create text and label fields
     TEXT = data.Field(tokenize = 'spacy', include_lengths = True, batch_first=True)
@@ -64,7 +75,7 @@ if __name__ == "__main__":
     # Load dataset
     logging.info("Reading dataset and splitting into train/val")
 
-    dataset = pd.read_pickle(DATASET_PATH)
+    dataset = pd.read_pickle(dataset_path)
     train_df = dataset['X_train'].loc[:, ['text', 'stars']][0:100000]
     train_df['stars'] = (train_df['stars'] >= 3.0).astype(int)
     train_df.columns = ['text', 'target']
@@ -98,7 +109,7 @@ if __name__ == "__main__":
 
     logging.info("Finished building vocabulary")
 
-    device = torch.device(f'{CUDA_DEVICE}' if torch.cuda.is_available() else 'cpu')
+    device = torch.device(args.cuda_device if torch.cuda.is_available() else 'cpu')
     train_iterator, valid_iterator = data.BucketIterator.splits(
         (train_ds, val_ds),
         batch_size = BATCH_SIZE,
@@ -129,8 +140,16 @@ if __name__ == "__main__":
     #  NN to GPU
     model.to(device)
 
+    early_stopping = EarlyStopping(monitor="val_loss", mode="min", verbose=True, patience=3)
+    checkpoint_callback = ModelCheckpoint(
+        filepath=os.getcwd(), save_top_k=1, verbose=True, monitor="val_loss", mode="min", prefix="",
+    )
+    lr_logger = LearningRateMonitor()
+
     # Loss and optimizer
-    trainer = pl.Trainer(gpus=1, max_epochs=20, progress_bar_refresh_rate=20)
+    trainer = pl.Trainer(gpus=1, max_epochs=20, progress_bar_refresh_rate=20,
+                         callbacks=[lr_logger, early_stopping, checkpoint_callback],
+                         checkpoint_callback=True)
 
     # Auto log all MLflow entities
     mlflow.pytorch.autolog()
@@ -138,4 +157,10 @@ if __name__ == "__main__":
     # Train the model
     logging.info("Training pytorch model")
     with mlflow.start_run() as run:
+        mlflow.log_artifact("TEXT.Field")
         trainer.fit(model, train_iterator, valid_iterator)
+
+
+if __name__ == "__main__":
+    logger = setup_logging()
+    main(get_parser().parse_args())

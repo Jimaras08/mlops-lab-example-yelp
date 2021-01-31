@@ -91,6 +91,7 @@ class LSTM_net(pl.LightningModule):
 
             loss = criterion(predictions, batch.label)
             acc = accuracy(predictions, batch.label)
+            # self.log_dict({'test_loss': loss, 'test_acc': acc})
             return loss
 
     def validation_step(self, batch, batch_nb):
