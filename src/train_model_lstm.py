@@ -77,10 +77,12 @@ def main(args):
 
     dataset = pd.read_pickle(dataset_path)
     train_df = dataset['X_train'].loc[:, ['text', 'stars']][0:100000]
+    train_df['text'] = train_df['text'].str.lower()
     train_df['stars'] = (train_df['stars'] >= 3.0).astype(int)
     train_df.columns = ['text', 'target']
 
     val_df = dataset['X_val'].loc[:, ['text', 'stars']][0:50000]
+    val_df['text'] = val_df['text'].str.lower()
     val_df['stars'] = (val_df['stars'] >= 3.0).astype(int)
     val_df.columns = ['text', 'target']
 
