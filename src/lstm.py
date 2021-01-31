@@ -61,16 +61,18 @@ class LSTM_net(pl.LightningModule):
         #output = self.fc1(hidden)
         #output = self.dropout(self.fc2(output))
 
-        return output
+        return output #output
 
     def training_step(self, batch, batch_nb):
         text, text_lengths = batch.text
 
-        criterion = nn.BCEWithLogitsLoss()
+        criterion = nn.BCELoss()
 
-        predictions = self(text, text_lengths).squeeze(1)
+        predictions = self(text, text_lengths).squeeze()
+       # print("train predictions", predictions)
 
         loss = criterion(predictions, batch.label)
+       # print(loss)
         acc = accuracy(predictions, batch.label)
 
         # Use the current PyTorch logger
@@ -85,32 +87,34 @@ class LSTM_net(pl.LightningModule):
 
             text, text_lengths = batch.text
 
-            criterion = nn.BCEWithLogitsLoss()
+            criterion = nn.BCELoss()
 
             predictions = self(text, text_lengths).squeeze(1)
 
             loss = criterion(predictions, batch.label)
+            print(loss)
             acc = accuracy(predictions, batch.label)
+
             return loss
 
     def validation_step(self, batch, batch_nb):
 
-        with torch.no_grad():
+        text, text_lengths = batch.text
 
-            text, text_lengths = batch.text
+        criterion = nn.BCELoss()
 
-            criterion = nn.BCEWithLogitsLoss()
+        predictions = self(text, text_lengths).squeeze()
+       # print("val predictions", predictions)
 
-            predictions = self(text, text_lengths).squeeze(1)
+        loss = criterion(predictions, batch.label)
+       # print(loss)
+        acc = accuracy(predictions, batch.label)
 
-            loss = criterion(predictions, batch.label)
-            acc = accuracy(predictions, batch.label)
+        # Use the current PyTorch logger
+        self.log("val_loss", loss, on_epoch=True)
+        self.log("val acc", acc, on_epoch = True)
 
-            # Use the current PyTorch logger
-            self.log("val_loss", loss, on_epoch=True)
-            self.log("val acc", acc, on_epoch = True)
-
-            return loss
+        return loss
 
     def configure_optimizers(self):
-        return torch.optim.Adam(self.parameters(), lr=0.02)
+        return torch.optim.Adam(self.parameters(), lr=0.001)

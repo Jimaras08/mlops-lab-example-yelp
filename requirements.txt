@@ -10,5 +10,5 @@ dill
 torch==1.6
 torchtext==0.7
 mlflow
-pytorch-lightning
+pytorch-lightning==0.10.0
 spacy
