@@ -1,7 +1,6 @@
-spacy
-dill
+spacy==2.3.5
+dill==0.3.3
 torch==1.6
 torchtext==0.7
-mlflow
-pytorch-lightning
-spacy
+mlflow==1.13.1
+pytorch-lightning==1.1.6

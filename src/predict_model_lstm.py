@@ -5,13 +5,14 @@ Script for prediction
 import spacy
 import dill
 
+import torch
 nlp = spacy.load('en')
 MODEL_PATH = '....'
 DEVICE = 'cuda:2'
 TOKENIZER_PATH = 'TEXT.Field'
 
 with open(TOKENIZER_PATH, "rb") as f:
-     TEXT = dill.load(TEXT, f)
+     TEXT = dill.load(f)
 
 
 def predict(model, sentence):
