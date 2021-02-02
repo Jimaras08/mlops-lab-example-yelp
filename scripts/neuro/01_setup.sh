@@ -31,8 +31,8 @@ neuro config switch-cluster neuro-compute
 echo "Securely uploading bucket credentials"
 neuro secret add bucket-sa-key @${BUCKET_SA_KEY_FILE}
 
-echo "Uploading training code"
+echo "Uploading the project"
 neuro cp -ru . -T storage:yelp_dataset
 
-echo "Building training image"
-neuro-extras image build -f Dockerfile . image:yelp_dataset:v1.0
+#echo "Building training image"
+#neuro-extras image build -f Dockerfile . image:yelp_dataset:v1.0
