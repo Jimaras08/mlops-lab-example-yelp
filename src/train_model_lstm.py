@@ -6,7 +6,8 @@ from torchtext import data
 import torch.nn as nn
 import pandas as pd
 
-import dill 
+# import dill
+import pickle
 
 import logging
 import time
@@ -35,33 +36,44 @@ def get_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('--dataset_path', type=Path, default=Path('/data/dataset_split.pkl'))
     parser.add_argument('--cuda_device', type=str, default="cuda:2")
+
+    parser.add_argument('--max_vocab_size', type=int, default=20000)
+    parser.add_argument('--batch_size', type=int, default=128)
+    parser.add_argument('--embedding_dim', type=int, default=200)
+    parser.add_argument('--hidden_dim', type=int, default=128)
+    parser.add_argument('--output_dim', type=int, default=1)
+    parser.add_argument('--n_layers', type=int, default=2)
+    parser.add_argument('--bidirectional', type=bool, default=True)
+    parser.add_argument('--dropout', type=float, default=0.2)
+    parser.add_argument('--seed', type=int, default=42)
     return parser
 
-
-MAX_VOCAB_SIZE = 20000
-BATCH_SIZE = 128
 
 # Declare hyperparameters
 # TODO: use and log these params
 # num_epochs = 25
 # learning_rate = 0.001
 
-EMBEDDING_DIM = 200
-HIDDEN_DIM = 128
-OUTPUT_DIM = 1
-N_LAYERS = 2
-BIDIRECTIONAL = True
-DROPOUT = 0.2
-SEED = 42
 
 # export MLFLOW_TRACKING_URI=http://34.91.123.207:5000/
 
 
-def main(args):
+def prepare(*,
+            dataset_path,
+            cuda_device,
+            max_vocab_size,
+            batch_size,
+            embedding_dim,
+            hidden_dim,
+            output_dim,
+            n_layers,
+            bidirectional,
+            dropout,
+            seed,
+            ):
     logger.info(f"Args: {args}")
-    dataset_path = args.dataset_path
 
-    torch.manual_seed(SEED)
+    torch.manual_seed(seed)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
 
@@ -100,69 +112,87 @@ def main(args):
     logging.info("Building vocabulary")
 
     TEXT.build_vocab(train_ds,
-                 max_size = MAX_VOCAB_SIZE,
+                 max_size = max_vocab_size,
                  vectors = 'glove.6B.200d',
                  unk_init = torch.Tensor.zero_)
 
     LABEL.build_vocab(train_ds)
 
-    PAD_IDX = TEXT.vocab.stoi[TEXT.pad_token] # padding
-    INPUT_DIM = len(TEXT.vocab)
+    pad_idx = TEXT.vocab.stoi[TEXT.pad_token] # padding
+    input_dim = len(TEXT.vocab)
 
     logging.info("Finished building vocabulary")
 
-    device = torch.device(args.cuda_device if torch.cuda.is_available() else 'cpu')
+    device = torch.device(cuda_device if torch.cuda.is_available() else 'cpu')
     train_iterator, valid_iterator = data.BucketIterator.splits(
         (train_ds, val_ds),
-        batch_size = BATCH_SIZE,
+        batch_size = batch_size,
         sort_within_batch = True,
         device = device)
     
     # Create model
-    model = LSTM_net(INPUT_DIM,
-            EMBEDDING_DIM, 
-            HIDDEN_DIM, 
-            OUTPUT_DIM,
-            N_LAYERS, 
-            BIDIRECTIONAL, 
-            DROPOUT,
-            PAD_IDX)
+    model = LSTM_net(input_dim,
+            embedding_dim,
+            hidden_dim,
+            output_dim,
+            n_layers,
+            bidirectional,
+            dropout,
+            pad_idx)
 
     # Add pretrained embeddings
     pretrained_embeddings = TEXT.vocab.vectors
     model.embedding.weight.data.copy_(pretrained_embeddings)
-    model.embedding.weight.data[PAD_IDX] = torch.zeros(EMBEDDING_DIM)
+    model.embedding.weight.data[pad_idx] = torch.zeros(embedding_dim)
 
     logging.info("Transferring model to device")
 
     # Save tokenizer
     with open("TEXT.Field", "wb") as f:
-        dill.dump(TEXT, f)
+        # dill.dump(TEXT, f)
+        pickle.dump(TEXT, f)
 
     #  NN to GPU
     model.to(device)
 
+    return model, train_iterator, valid_iterator
+
+
+def train(model, train_iterator, valid_iterator):
+
     early_stopping = EarlyStopping(monitor="val_loss", mode="min", verbose=True, patience=3)
-    checkpoint_callback = ModelCheckpoint(
-        filepath=os.getcwd(), save_top_k=1, verbose=True, monitor="val_loss", mode="min", prefix="",
-    )
     lr_logger = LearningRateMonitor()
 
     # Loss and optimizer
-    trainer = pl.Trainer(gpus=1, max_epochs=20, progress_bar_refresh_rate=20,
+    trainer = pl.Trainer(gpus=1, max_epochs=1,# progress_bar_refresh_rate=20,
                          callbacks=[lr_logger, early_stopping],
                          checkpoint_callback=True)
 
     # Auto log all MLflow entities
-    mlflow.pytorch.autolog()
+    mlflow.pytorch.autolog(log_models=True)
 
     # Train the model
     logging.info("Training pytorch model")
     with mlflow.start_run() as run:
         mlflow.log_artifact("TEXT.Field")
         trainer.fit(model, train_iterator, valid_iterator)
+        # mlflow.pytorch.log_model(model, "model")
 
 
 if __name__ == "__main__":
     logger = setup_logging()
-    main(get_parser().parse_args())
+    args = get_parser().parse_args()
+    model, train_iterator, valid_iterator = prepare(
+        dataset_path=args.dataset_path,
+        cuda_device=args.cuda_device,
+        max_vocab_size=args.max_vocab_size,
+        batch_size=args.batch_size,
+        embedding_dim=args.embedding_dim,
+        hidden_dim=args.hidden_dim,
+        output_dim=args.output_dim,
+        n_layers=args.n_layers,
+        bidirectional=args.bidirectional,
+        dropout=args.dropout,
+        seed=args.seed,
+    )
+    train(model, train_iterator, valid_iterator)
