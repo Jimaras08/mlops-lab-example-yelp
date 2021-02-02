@@ -20,6 +20,6 @@ neuro run \
   image:/artemyushkovskiy/yelp_dataset:v1.0 \
   bash
 echo
-echo "Server is running, please don't forget to kill it: 'neuro kill ${NAME}'"
+echo "Server is running, please DO NOT FORGET TO KILL IT: 'neuro kill ${NAME}'"
 echo
 neuro attach ${NAME}

@@ -22,11 +22,11 @@ neuro run \
   --detach \
   --life-span 8h \
   image:/artemyushkovskiy/yelp_dataset:v1.0 \
-  bash -euo pipefail -o xtrace -c '
+  bash -euo pipefail -c '
     pip install -Uq jupyter
     jupyter notebook --no-browser --ip=0.0.0.0 --allow-root --NotebookApp.token= --notebook-dir=/project
   '
 echo
-echo "Jupyter is running, please don't forget to kill it: 'neuro kill ${NAME}'"
+echo "Jupyter is running, please DO NOT FORGET TO KILL IT: 'neuro kill ${NAME}'"
 echo
 neuro logs ${NAME}
