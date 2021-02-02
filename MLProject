@@ -1,0 +1,15 @@
+name: "MLOps Community Lab 1, Team 3: Yelp Dataset Classification"
+
+# we use pip and run MLflow already in a docker container
+# so to run the training it use 'mlflow run . --no-conda'
+conda_env: ~
+
+signature:
+    inputs: '[{"name": "text", "type": "string"}'
+    outputs: '[{"type": "boolean"}]'
+
+entry_points:
+  main:
+    #parameters:
+    #  data_file: dataset_split.pkl
+    command: "python -u src/train_average_embedding.py"
