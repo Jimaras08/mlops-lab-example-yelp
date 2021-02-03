@@ -9,6 +9,7 @@ import pickle
 import logging
 
 from src.average_embedding import TextSentiment
+from src.predict_average_embedding import log_model
 from src.utils import setup_logging
 import tempfile
 from pathlib import Path
@@ -39,10 +40,10 @@ MAX_EPOCHS = 1
 
 
 def main():
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     train_dataset, test_dataset = text_classification.DATASETS['YelpReviewPolarity'](
         root='../data', ngrams=NGRAMS, vocab=None)
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     train_dataloader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True,
                         collate_fn=generate_batch, num_workers = 5)
@@ -69,13 +70,13 @@ def main():
                          callbacks=[lr_logger, early_stopping])
 
     # Auto log all MLflow entities
-    mlflow.pytorch.autolog(log_models = True)
+    mlflow.pytorch.autolog(log_models=False)
 
     with mlflow.start_run() as run:
         logger.info(f"run_id: {run.info.run_id}")
         mlflow.log_param("max_epochs", MAX_EPOCHS)
         mlflow.log_artifact(VOCAB_DUMP_PATH, artifact_path="model/data")
-
+        log_model(model)
         trainer.fit(model, train_dataloader, test_dataloader)
 
 

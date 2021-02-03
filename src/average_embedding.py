@@ -50,7 +50,8 @@ class TextSentiment(pl.LightningModule):
         predictions = predictions.squeeze(1)
 
         acc = accuracy(predictions.argmax(1), target)
-        auc = auroc(predictions, target)
+        # NOTE: auroc fails with ValueError: No positive samples in targets, true positive value should be meaningless
+        #auc = auroc(predictions, target)
 
         self.log("val_acc", acc, on_epoch=True)
         self.log("val_loss", loss, on_epoch=True)
