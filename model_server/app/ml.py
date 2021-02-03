@@ -22,19 +22,6 @@ PREDICT_MODULE = "src.predict_average_embedding"
 MODEL_WRAPPER_CLASS_NAME = "ModelWrapper"
 
 
-def _rename_dir(directory: Path, new_name: str, skip_if_exists=True):
-    if not skip_if_exists:
-        raise NotImplementedError("skip_if_exists=False")
-
-    new_directory = directory.parent / new_name
-    if not new_directory.is_dir():
-        logger.info(f"Copying dir {directory} -> {new_directory}")
-        shutil.copytree(str(directory), str(new_directory))
-    else:
-        logger.info(f"Dir already exists, skipping copying: {new_directory}")
-    return new_directory
-
-
 def load_model(model_artifacts_path: Union[str, Path]):
     time_started = time()
 
@@ -61,9 +48,8 @@ def load_model(model_artifacts_path: Union[str, Path]):
     if not vocab_file.is_file():
         raise ValueError(f"Vocab file not found: {vocab_file}")
 
-    code_dir = _rename_dir(code_dir, new_name=PREDICT_MODULE.split(".")[0])
-    logger.info(f"Adding code dir root to sys.path: {code_dir.parent}")
-    sys.path.insert(0, str(code_dir.parent))
+    logger.info(f"Adding code dir root to sys.path: {code_dir}")
+    sys.path.insert(0, str(code_dir))
 
     logger.info(f"Importing class {PREDICT_MODULE}.{MODEL_WRAPPER_CLASS_NAME}")
     predict_module = importlib.import_module(PREDICT_MODULE)

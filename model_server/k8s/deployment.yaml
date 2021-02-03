@@ -41,7 +41,7 @@ spec:
               && git clone --branch $GIT_BRANCH ${GIT_REPO} /tmp/project
               && mv /tmp/project/model_server /sources-root
               && ls /sources-root
-        - name: mlflow-download
+        - name: model-download
           image: gcr.io/mlops-lab1-team3/yelp-dataset/model-server:v1.0
           volumeMounts:
             - name: models-root
@@ -64,6 +64,8 @@ spec:
               && env | grep MLFLOW_
               && cp -r $(mlflow artifacts download --run-id "${MLFLOW_MODEL_RUN_ID}") -T /models-root
               && ls /models-root
+              && mkdir /models-root/code/src
+              && mv /models-root/code/* /models-root/code/src/
       containers:
         - name: main
           image: gcr.io/mlops-lab1-team3/yelp-dataset/model-server:v1.0
@@ -74,6 +76,11 @@ spec:
               mountPath: /sources-root
             - name: models-root
               mountPath: /models-root
+          resources:
+            requests:
+              memory: "256Mi"
+            limits:
+              memory: "1024Mi"
           env:
             - name: MLFLOW_MODEL_ARTIFACTS_PATH
               value: /models-root/model
