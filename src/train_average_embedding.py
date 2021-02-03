@@ -7,10 +7,11 @@ import torch
 import pytorch_lightning as pl
 import pickle
 import logging
+import argparse
 
-from src.average_embedding import TextSentiment
-from src.predict_average_embedding import log_model
-from src.utils import setup_logging
+from average_embedding import TextSentiment
+from predict_average_embedding import log_model
+from utils import setup_logging
 import tempfile
 from pathlib import Path
 
@@ -32,29 +33,37 @@ def generate_batch(batch):
     text = torch.cat(text)
     return text, offsets, label
 
+def get_parser():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--n_grams', type=int, default=1)
+    parser.add_argument('--batch_size', type=int, default=32)
+    parser.add_argument('--embed_dim', type=int, default=32),
+    parser.add_argument('--max_epochs', type=int, default=10)
+    return parser
 
 NGRAMS = 1
-BATCH_SIZE = 32
 EMBED_DIM = 32
 MAX_EPOCHS = 1
 
 
-def main():
+def main(n_grams, batch_size, embed_dim, max_epochs):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     train_dataset, test_dataset = text_classification.DATASETS['YelpReviewPolarity'](
-        root='../data', ngrams=NGRAMS, vocab=None)
+        root='../data', ngrams=n_grams, vocab=None)
 
-    train_dataloader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True,
+    train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True,
                         collate_fn=generate_batch, num_workers = 5)
 
-    test_dataloader = DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=False,
+    test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False,
                         collate_fn=generate_batch, num_workers = 5)
 
     vocab = train_dataset.get_vocab()
     VOCAB_SIZE = len(vocab)
-    NUN_CLASS = len(train_dataset.get_labels())
-    model = TextSentiment(VOCAB_SIZE, EMBED_DIM, NUN_CLASS)
+    NUM_CLASS = len(train_dataset.get_labels())
+
+    logger.info("Creating average embedding model")
+    model = TextSentiment(VOCAB_SIZE, embed_dim, NUM_CLASS)
     model.to(device)
 
     logger.info(f"Saving vocabulary to {VOCAB_DUMP_PATH}")
@@ -63,10 +72,9 @@ def main():
 
     early_stopping = EarlyStopping(monitor="val_loss", mode="min", verbose=True, patience=3)
     lr_logger = LearningRateMonitor()
-    # scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 1, gamma=0.9)
 
     # Loss and optimizer
-    trainer = pl.Trainer(gpus=1, max_epochs=MAX_EPOCHS, progress_bar_refresh_rate=20,
+    trainer = pl.Trainer(gpus=1, max_epochs=max_epochs, progress_bar_refresh_rate=20,
                          callbacks=[lr_logger, early_stopping])
 
     # Auto log all MLflow entities
@@ -81,4 +89,5 @@ def main():
 
 if __name__ == "__main__":
     logger = setup_logging()
-    main()
+    args = get_parser().parse_args()
+    main(args.n_grams, args.batch_size, args.embed_dim, args.max_epochs)
