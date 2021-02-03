@@ -75,8 +75,8 @@ def main():
     with mlflow.start_run() as run:
         logger.info(f"run_id: {run.info.run_id}")
         mlflow.log_artifact(VOCAB_DUMP_PATH, artifact_path="model/data")
-        log_model(model)
         trainer.fit(model, train_dataloader, test_dataloader)
+        log_model(model)
 
 
 if __name__ == "__main__":
