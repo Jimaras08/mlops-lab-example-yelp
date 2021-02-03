@@ -9,9 +9,9 @@ import pickle
 import logging
 import argparse
 
-from average_embedding import TextSentiment
-from predict_average_embedding import log_model
-from utils import setup_logging
+from src.average_embedding import TextSentiment
+from src.predict_average_embedding import log_model
+from src.utils import setup_logging
 import tempfile
 from pathlib import Path
 
