@@ -19,7 +19,7 @@ neuro run \
   --env GIT_PYTHON_REFRESH=quiet \
   --detach \
   image:/artemyushkovskiy/yelp_dataset:v1.0 \
-  mlflow run /project --no-conda
+  mlflow run /project --no-conda -P max_epochs=15
 echo
 echo "Server is running, please DO NOT FORGET TO KILL IT: 'neuro kill ${NAME}'"
 echo
