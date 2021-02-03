@@ -20,7 +20,6 @@ spec:
       initContainers:
         - name: git-clone
           image: python:3.7
-          restartPolicy: Never
           env:
             - name: GIT_REPO
               value: https://github.com/dmangonakis/Yelp_Dataset.git
@@ -43,7 +42,6 @@ spec:
               && ls /sources-root
         - name: model-download
           image: gcr.io/mlops-lab1-team3/yelp-dataset/model-server:v1.0
-          restartPolicy: Never
           volumeMounts:
             - name: models-root
               mountPath: /models-root
