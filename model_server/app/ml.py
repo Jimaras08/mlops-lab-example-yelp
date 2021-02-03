@@ -5,6 +5,7 @@ import shutil
 import sys
 from pathlib import Path
 from typing import Union
+from time import time
 
 import torch
 
@@ -35,6 +36,8 @@ def _rename_dir(directory: Path, new_name: str, skip_if_exists=True):
 
 
 def load_model(model_artifacts_path: Union[str, Path]):
+    time_started = time()
+
     model_artifacts_path = Path(model_artifacts_path)
     ls = list(model_artifacts_path.iterdir())
     logger.info(f"Using model artifacts directory: {model_artifacts_path}: {ls}")
@@ -76,5 +79,6 @@ def load_model(model_artifacts_path: Union[str, Path]):
 
     result = ModelWrapper(model, vocab)
 
-    logger.info(f"Model loaded successfully from {model_artifacts_path}")
+    elapsed = time() - time_started
+    logger.info(f"[Elapsed {elapsed:.2f}s]: Model loaded from {model_artifacts_path}")
     return result
