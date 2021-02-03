@@ -20,6 +20,11 @@ spec:
       initContainers:
         - name: git-clone
           image: python:3.7
+          env:
+            - name: GIT_REPO
+              value: https://github.com/dmangonakis/Yelp_Dataset.git
+            - name: GIT_BRANCH
+              value: "${GIT_BRANCH}"  # to be set via envsubst
           volumeMounts:
             - name: sources-root
               mountPath: /sources-root
@@ -35,13 +40,13 @@ spec:
               && mv /tmp/project/model_server /sources-root
               && ls /sources-root
         - name: model-download
-          image: "${IMAGE_GCR}"  # to be set via envsubst
+          image: gcr.io/mlops-lab1-team3/model_server:v1.0
           volumeMounts:
             - name: models-root
               mountPath: /models-root
           env:
             - name: MLFLOW_TRACKING_URI
-              value: "${MLFLOW_TRACKING_URI}"  # to be set via envsubst
+              value: http://mlflow.lab1-team3.neu.ro:5000
             - name: MLFLOW_MODEL_RUN_ID
               value: "${MLFLOW_MODEL_RUN_ID}"  # to be set via envsubst
           command:
@@ -53,12 +58,11 @@ spec:
             - >-
               echo "Downloading model of run-id: ${MLFLOW_MODEL_RUN_ID}"
               && env | grep MLFLOW_
-              && path=$(mlflow artifacts download --run-id "${MLFLOW_MODEL_RUN_ID}")
-              && cp -r $path -T /models-root
+              && cp -r $(mlflow artifacts download --run-id "${MLFLOW_MODEL_RUN_ID}") -T /models-root
               && ls /models-root
       containers:
         - name: main
-          image: "${IMAGE_GCR}"  # to be set via envsubst
+          image: gcr.io/mlops-lab1-team3/model_server:v1.0
           ports:
           - containerPort: 8080
           volumeMounts:
@@ -67,14 +71,16 @@ spec:
             - name: models-root
               mountPath: /models-root
           env:
-            - name: MODEL_ARTIFACTS_PATH
+            - name: MLFLOW_MODEL_ARTIFACTS_PATH
               value: /models-root/model
+            - name: MLFLOW_MODEL_RUN_ID
+              value: "${MLFLOW_MODEL_RUN_ID}"  # to be set via envsubst
             - name: SERVER_HOST
               value: "0.0.0.0"
             - name: SERVER_PORT
               value: "8080"
             - name: SERVER_NUM_WORKERS
-              value: 2
+              value: "2"
           command:
             - "/bin/bash"
             - "-euo"

@@ -3,7 +3,7 @@ import logging
 import uvicorn
 from fastapi import FastAPI, HTTPException
 
-from app.constants import MODEL_ARTIFACTS_PATH
+from app.constants import MLFLOW_MODEL_ARTIFACTS_PATH, MLFLOW_MODEL_RUN_ID
 from app.ml import load_model
 from app.models import ModelInput
 
@@ -12,7 +12,7 @@ logger = logging.getLogger(__file__)
 app = FastAPI()
 
 
-MODEL = load_model(MODEL_ARTIFACTS_PATH)
+MODEL = load_model(MLFLOW_MODEL_ARTIFACTS_PATH)
 
 
 @app.get("/ping")
@@ -32,6 +32,7 @@ async def predict(input: ModelInput):
         return {
             "text": input.dict(exclude_unset=True),
             "is_positive_review": model_output,
+            "model": {"mlflow_run_id": MLFLOW_MODEL_RUN_ID,}
         }
 
 

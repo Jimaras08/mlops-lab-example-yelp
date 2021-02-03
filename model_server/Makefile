@@ -6,9 +6,10 @@ IMAGE_GCR = gcr.io/mlops-lab1-team3/$(IMAGE_LOCAL)
 
 K8S_NS = mlflow-model
 
-GIT_REPO = https://github.com/dmangonakis/Yelp_Dataset.git
 GIT_BRANCH = $(shell git branch --show-current)
 
+
+MLFLOW_MODEL_ARTIFACTS_PATH =
 
 .PHONY: pass
 pass:
@@ -36,30 +37,28 @@ k8s-create-namespace:
 	kubectl create namespace $(K8S_NS) || true
 
 
-.PHONY: k8s-undeploy
-k8s-undeploy:
+.PHONY: k8s-down-deployment
+k8s-down-deployment:
 	kubectl -n $(K8S_NS) delete -f k8s/deployment.yaml
 
-.PHONY: k8s-deploy
-k8s-deploy: require-GIT_REPO require-GIT_BRANCH
-k8s-deploy: require-IMAGE_GCR
-k8s-deploy:
+.PHONY: k8s-up-deployment
+k8s-up-deployment: require-GIT_BRANCH require-MLFLOW_MODEL_RUN_ID
+k8s-up-deployment:
 	echo "Deploying from branch origin/$(GIT_BRANCH)"
 	cd $(MAKEFILE_DIR) \
-        && export GIT_REPO=$(GIT_REPO) \
         && export GIT_BRANCH=$(GIT_BRANCH) \
-        && export IMAGE_GCR=$(IMAGE_GCR) \
-        && export POSTGRES_HOST=$(POSTGRES_HOST) \
-        && envsubst < k8s/deployment.yaml | kubectl -n $(K8S_NS) apply -f -
+        && export MLFLOW_MODEL_RUN_ID=$(MLFLOW_MODEL_RUN_ID) \
+        && envsubst '$$GIT_BRANCH, $$MLFLOW_MODEL_RUN_ID' < k8s/deployment.yaml \
+           | kubectl -n $(K8S_NS) apply -f -
 	kubectl -n $(K8S_NS) get all
 
 
-.PHONY: k8s-unservice
-k8s-unservice:
+.PHONY: k8s-down-service
+k8s-down-service:
 	kubectl -n mlflow-seldon delete -f k8s/service.yaml
 
-.PHONY: k8s-service
-k8s-service:
+.PHONY: k8s-up-service
+k8s-up-service:
 	echo "Deploying from branch origin/$(GIT_BRANCH)"
 	cd $(MAKEFILE_DIR) \
         && kubectl -n $(K8S_NS) apply -f k8s/service.yaml
