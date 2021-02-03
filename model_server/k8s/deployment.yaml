@@ -75,9 +75,9 @@ spec:
               mountPath: /models-root
           resources:
             requests:
-              memory: "256Mi"
+              memory: "2000Mi"
             limits:
-              memory: "1024Mi"
+              memory: "3000Mi"
           env:
             - name: MLFLOW_MODEL_ARTIFACTS_PATH
               value: /models-root/model
