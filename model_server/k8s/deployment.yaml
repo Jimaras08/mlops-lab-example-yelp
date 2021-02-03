@@ -1,0 +1,94 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mlflow-model-server
+spec:
+  selector:
+    matchLabels:
+      run: mlflow-model-server
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: mlflow-model-server
+    spec:
+      volumes:
+        - name: sources-root
+          emptyDir: {}
+        - name: models-root
+          emptyDir: {}
+      initContainers:
+        - name: git-clone
+          image: python:3.7
+          volumeMounts:
+            - name: sources-root
+              mountPath: /sources-root
+          command:
+            - "/bin/bash"
+            - "-euo"
+            - "xtrace"
+            - "-c"
+            # Note: ${GIT_REPO} and ${GIT_BRANCH} to be set via envsubst
+            - >-
+              echo "Installing the app: ${GIT_REPO}@${GIT_BRANCH}"
+              && git clone --branch $GIT_BRANCH ${GIT_REPO} /tmp/project
+              && mv /tmp/project/model_server /sources-root
+              && ls /sources-root
+        - name: model-download
+          image: "${IMAGE_GCR}"  # to be set via envsubst
+          volumeMounts:
+            - name: models-root
+              mountPath: /models-root
+          env:
+            - name: MLFLOW_TRACKING_URI
+              value: "${MLFLOW_TRACKING_URI}"  # to be set via envsubst
+            - name: MLFLOW_MODEL_RUN_ID
+              value: "${MLFLOW_MODEL_RUN_ID}"  # to be set via envsubst
+          command:
+            - "/bin/bash"
+            - "-euo"
+            - "xtrace"
+            - "-c"
+            # Note: ${GIT_REPO} and ${GIT_BRANCH} to be set via envsubst
+            - >-
+              echo "Downloading model of run-id: ${MLFLOW_MODEL_RUN_ID}"
+              && env | grep MLFLOW_
+              && path=$(mlflow artifacts download --run-id "${MLFLOW_MODEL_RUN_ID}")
+              && cp -r $path -T /models-root
+              && ls /models-root
+      containers:
+        - name: main
+          image: "${IMAGE_GCR}"  # to be set via envsubst
+          ports:
+          - containerPort: 8080
+          volumeMounts:
+            - name: sources-root
+              mountPath: /sources-root
+            - name: models-root
+              mountPath: /models-root
+          env:
+            - name: MODEL_ARTIFACTS_PATH
+              value: /models-root/model
+            - name: SERVER_HOST
+              value: "0.0.0.0"
+            - name: SERVER_PORT
+              value: "8080"
+            - name: SERVER_NUM_WORKERS
+              value: 2
+          command:
+            - "/bin/bash"
+            - "-euo"
+            - "xtrace"
+            - "-c"
+            - >-
+              echo "Running the app"
+              && env | grep SERVER_
+              && env | grep MODEL_
+              && cd /sources-root/model_server
+              && uvicorn app.main:app \
+                  --host ${SERVER_HOST} \
+                  --port ${SERVER_PORT} \
+                  --workers ${SERVER_NUM_WORKERS} \
+                  --header "${SERVER_MODEL_HEADER}" \
+                  --access-log \
+                  --use-colors
