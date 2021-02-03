@@ -1,4 +1,5 @@
 import os
+from time import time
 from pathlib import Path
 
 import torch
@@ -29,17 +30,20 @@ def log_model(model):
         pytorch_model=model,
         artifact_path=MODEL_ARTIFACT_PATH,
         registered_model_name=MODEL_NAME,
-        code_paths=[str(SRC_DIR / PREDICT_FILE_NAME)],
+        code_paths=list(SRC_DIR.glob("**/*.py")),
         requirements_file=str(REQUIREMENTS_PATH),
     )
 
 
 class ModelWrapper:
     def __init__(self, model, vocab):
+        logger.info(f"ModelWrapper.__init__: model of type {type(model)}: {model}")
+        logger.info(f"ModelWrapper.__init__: vocab of type {type(vocab)}: {vocab}")
         self.model = model
         self.vocab = vocab
 
     def predict(self, text: str):
+        time_started = time()
         tokenizer = get_tokenizer("basic_english")
         with torch.no_grad():
             text = torch.tensor(
@@ -48,5 +52,11 @@ class ModelWrapper:
                     for token in ngrams_iterator(tokenizer(text), NGRAMS)
                 ]
             )
-            output = self.model(text, torch.tensor([0]))
-            return output.argmax(1).item()
+            output_tensor = self.model(text, torch.tensor([0]))
+            output = output_tensor.argmax(1).item()
+            elapsed = time() - time_started
+            logger.info(
+                f"ModelWrapper.predict: [elapsed {elapsed:.2f}s] "
+                f"len(text)={len(text)} answer={output}"
+            )
+            return output
