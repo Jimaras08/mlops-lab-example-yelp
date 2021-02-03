@@ -9,13 +9,10 @@ K8S_NS = mlflow-model
 GIT_REPO = https://github.com/dmangonakis/Yelp_Dataset.git
 GIT_BRANCH = $(shell git branch --show-current)
 
-## Run the app
-#
 
-.PHONY: run-app
-run-app:
-	cd $(MAKEFILE_DIR) \
-        && uvicorn app.main:app --host 0.0.0.0 --port 8080 --access-log --use-colors
+.PHONY: pass
+pass:
+	true
 
 ## Prepare remote app image
 #
@@ -36,7 +33,7 @@ k8s-push-image:
 
 .PHONY: k8s-create-namespace
 k8s-create-namespace:
-	kubectl create namespace $(K8S_NS)
+	kubectl create namespace $(K8S_NS) || true
 
 
 .PHONY: k8s-undeploy
