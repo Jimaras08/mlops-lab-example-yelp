@@ -1,0 +1,18 @@
+name: "MLOps Community Lab 1, Team 3: Yelp Dataset Classification"
+
+# we use pip and run MLflow already in a docker container
+# so to run the training it use 'mlflow run . --no-conda'
+conda_env: ~
+
+signature:
+    inputs: '[{"name": "text", "type": "string"}'
+    outputs: '[{"type": "boolean"}]'
+
+entry_points:
+  main:
+    parameters:
+      n_grams: {type: int, default: 1}
+      batch_size: {type: int, default: 32}
+      embed_dim: {type: int, default: 32}
+      max_epochs: {type: int, default: 10}
+    command: "python3 -u src/train.py --n_grams {n_grams} --batch_size {batch_size} --embed_dim {embed_dim} --max_epochs {max_epochs}"
