@@ -21,7 +21,7 @@ neuro run \
   --env PYTHONPATH=/project \
   --detach \
   --life-span 8h \
-  image:/artemyushkovskiy/yelp_dataset:v1.0 \
+  gcr.io/mlops-lab1-team3/yelp-dataset/model:v1.0 \
   bash -euo pipefail -c '
     pip install -Uq jupyter
     jupyter notebook --no-browser --ip=0.0.0.0 --allow-root --NotebookApp.token= --notebook-dir=/project

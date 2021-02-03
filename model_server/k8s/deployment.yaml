@@ -31,6 +31,8 @@ spec:
           command:
             - "/bin/bash"
             - "-euo"
+            - "pipefail"
+            - "-o"
             - "xtrace"
             - "-c"
             # Note: ${GIT_REPO} and ${GIT_BRANCH} to be set via envsubst
@@ -39,8 +41,8 @@ spec:
               && git clone --branch $GIT_BRANCH ${GIT_REPO} /tmp/project
               && mv /tmp/project/model_server /sources-root
               && ls /sources-root
-        - name: model-download
-          image: gcr.io/mlops-lab1-team3/model_server:v1.0
+        - name: mlflow-download
+          image: gcr.io/mlops-lab1-team3/yelp-dataset/model-server:v1.0
           volumeMounts:
             - name: models-root
               mountPath: /models-root
@@ -52,6 +54,8 @@ spec:
           command:
             - "/bin/bash"
             - "-euo"
+            - "pipefail"
+            - "-o"
             - "xtrace"
             - "-c"
             # Note: ${GIT_REPO} and ${GIT_BRANCH} to be set via envsubst
@@ -62,7 +66,7 @@ spec:
               && ls /models-root
       containers:
         - name: main
-          image: gcr.io/mlops-lab1-team3/model_server:v1.0
+          image: gcr.io/mlops-lab1-team3/yelp-dataset/model-server:v1.0
           ports:
           - containerPort: 8080
           volumeMounts:
@@ -84,6 +88,8 @@ spec:
           command:
             - "/bin/bash"
             - "-euo"
+            - "pipefail"
+            - "-o"
             - "xtrace"
             - "-c"
             - >-
@@ -95,6 +101,5 @@ spec:
                   --host ${SERVER_HOST} \
                   --port ${SERVER_PORT} \
                   --workers ${SERVER_NUM_WORKERS} \
-                  --header "${SERVER_MODEL_HEADER}" \
                   --access-log \
                   --use-colors

@@ -1,7 +1,7 @@
 MAKEFILE_PATH = $(abspath $(lastword $(MAKEFILE_LIST)))
 MAKEFILE_DIR = $(dir $(MAKEFILE_PATH))
 
-IMAGE_LOCAL = model_server:v1.0
+IMAGE_LOCAL = yelp-dataset/model-server:v1.0
 IMAGE_GCR = gcr.io/mlops-lab1-team3/$(IMAGE_LOCAL)
 
 K8S_NS = mlflow-model
@@ -23,8 +23,8 @@ build-image:
 	cd $(MAKEFILE_DIR) \
         && docker build . -t $(IMAGE_LOCAL)
 
-.PHONY: k8s-push-image
-k8s-push-image:
+.PHONY: push-image
+push-image:
 	gcloud auth configure-docker
 	docker tag $(IMAGE_LOCAL) $(IMAGE_GCR)
 	docker push $(IMAGE_GCR)
@@ -37,10 +37,6 @@ k8s-create-namespace:
 	kubectl create namespace $(K8S_NS) || true
 
 
-.PHONY: k8s-down-deployment
-k8s-down-deployment:
-	kubectl -n $(K8S_NS) delete -f k8s/deployment.yaml
-
 .PHONY: k8s-up-deployment
 k8s-up-deployment: require-GIT_BRANCH require-MLFLOW_MODEL_RUN_ID
 k8s-up-deployment:
@@ -50,12 +46,13 @@ k8s-up-deployment:
         && export MLFLOW_MODEL_RUN_ID=$(MLFLOW_MODEL_RUN_ID) \
         && envsubst '$$GIT_BRANCH, $$MLFLOW_MODEL_RUN_ID' < k8s/deployment.yaml \
            | kubectl -n $(K8S_NS) apply -f -
+	sleep 1
 	kubectl -n $(K8S_NS) get all
 
+.PHONY: k8s-down-deployment
+k8s-down-deployment:
+	kubectl -n $(K8S_NS) delete -f k8s/deployment.yaml
 
-.PHONY: k8s-down-service
-k8s-down-service:
-	kubectl -n mlflow-seldon delete -f k8s/service.yaml
 
 .PHONY: k8s-up-service
 k8s-up-service:
@@ -63,6 +60,10 @@ k8s-up-service:
 	cd $(MAKEFILE_DIR) \
         && kubectl -n $(K8S_NS) apply -f k8s/service.yaml
 	kubectl -n $(K8S_NS) get svc
+
+.PHONY: k8s-down-service
+k8s-down-service:
+	kubectl -n $(K8S_NS) delete -f k8s/service.yaml
 
 
 ## utils

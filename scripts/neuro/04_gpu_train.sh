@@ -18,7 +18,7 @@ neuro run \
   --env MLFLOW_TRACKING_URI=http://mlflow.lab1-team3.neu.ro:5000 \
   --env GIT_PYTHON_REFRESH=quiet \
   --detach \
-  image:/artemyushkovskiy/yelp_dataset:v1.0 \
+  gcr.io/mlops-lab1-team3/yelp-dataset/model:v1.0 \
   mlflow run /project --no-conda -P max_epochs=15
 echo
 echo "Server is running, please DO NOT FORGET TO KILL IT: 'neuro kill ${NAME}'"
