@@ -3,6 +3,7 @@ import pytorch_lightning as pl
 import torch
 from pytorch_lightning.metrics.functional import accuracy, auroc
 
+
 class TextSentiment(pl.LightningModule):
     def __init__(self, vocab_size, embed_dim, num_class):
         super().__init__()
@@ -19,7 +20,7 @@ class TextSentiment(pl.LightningModule):
     def forward(self, text, offsets):
         embedded = self.embedding(text, offsets)
         return self.fc(embedded)
-    
+
     def training_step(self, batch, batch_nb):
         text, offsets, target = batch
 
@@ -37,7 +38,7 @@ class TextSentiment(pl.LightningModule):
         self.log("train_loss", loss, on_epoch=True)
 
         return loss
-    
+
     def validation_step(self, batch, batch_nb):
         text, offsets, target = batch
 
@@ -51,7 +52,7 @@ class TextSentiment(pl.LightningModule):
 
         acc = accuracy(predictions.argmax(1), target)
         # NOTE: auroc fails with ValueError: No positive samples in targets, true positive value should be meaningless
-        #auc = auroc(predictions, target)
+        # auc = auroc(predictions, target)
 
         self.log("val_acc", acc, on_epoch=True)
         self.log("val_loss", loss, on_epoch=True)

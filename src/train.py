@@ -22,6 +22,9 @@ VOCAB_DUMP_PATH = Path(f"{tempfile.mkdtemp()}/vocab.pkl")
 
 
 def generate_batch(batch):
+    """
+    Batch generator function
+    """
     label = torch.tensor([entry[0] for entry in batch])
     text = [entry[1] for entry in batch]
     offsets = [0] + [len(entry) for entry in text]
@@ -43,12 +46,10 @@ def get_parser():
     return parser
 
 
-NGRAMS = 1
-EMBED_DIM = 32
-MAX_EPOCHS = 1
-
-
 def main(n_grams, batch_size, embed_dim, max_epochs):
+    """
+    Train model and log artifacts via MLFlow
+    """
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     train_dataset, test_dataset = text_classification.DATASETS["YelpReviewPolarity"](
