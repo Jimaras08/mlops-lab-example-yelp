@@ -45,10 +45,10 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     train_dataloader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True,
-                        collate_fn=generate_batch)
+                        collate_fn=generate_batch, num_workers = 5)
 
-    test_dataloader = DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=True,
-                        collate_fn=generate_batch)
+    test_dataloader = DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=False,
+                        collate_fn=generate_batch, num_workers = 5)
 
     vocab = train_dataset.get_vocab()
     VOCAB_SIZE = len(vocab)
