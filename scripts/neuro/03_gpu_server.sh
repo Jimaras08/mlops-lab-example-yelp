@@ -5,7 +5,7 @@ set -o xtrace
 [ -d "./src" ] || { echo "Must run from the project root!"; exit 1  ;}
 
 echo "Uploading the project"
-neuro cp -ru . -T storage:yelp_dataset
+neuro cp -ru . -T storage:yelp_dataset --exclude data --exclude lightning_logs --exclude mlruns --exclude .git
 
 NAME=yelp-server
 neuro run \

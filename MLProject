@@ -10,6 +10,9 @@ signature:
 
 entry_points:
   main:
-    #parameters:
-    #  data_file: dataset_split.pkl
-    command: "python -u src/train_average_embedding.py"
+    parameters:
+      n_grams: {type: int, default: 1}
+      batch_size: {type: int, default: 32}
+      embed_dim: {type: int, default: 32}
+      max_epochs: {type: int, default: 10}
+    command: "python3 -u src/train_average_embedding.py --n_grams {n_grams} --batch_size {batch_size} --embed_dim {embed_dim} --max_epochs {max_epochs}"

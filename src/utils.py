@@ -5,11 +5,11 @@ Utils for processing input data
 """
 
 import logging
+
 from torchtext import data
 
 
 class DataFrameDataset(data.Dataset):
-
     def __init__(self, df, fields, is_test=False, **kwargs):
         examples = []
         for i, row in df.iterrows():
@@ -41,10 +41,10 @@ class DataFrameDataset(data.Dataset):
 def setup_logging():
     # Setup root logger
     logger = logging.getLogger()
-    logger.setLevel('INFO')
+    logger.setLevel("INFO")
     ch = logging.StreamHandler()
     formatter = logging.Formatter(
-        '%(asctime)s - %(levelname)s - %(filename)s:%(funcName)s - %(message)s'
+        "%(asctime)s - %(levelname)s - %(filename)s:%(funcName)s - %(message)s"
     )
     ch.setFormatter(formatter)
     logger.addHandler(ch)
