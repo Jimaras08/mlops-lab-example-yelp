@@ -36,6 +36,7 @@ def generate_batch(batch):
 NGRAMS = 1
 BATCH_SIZE = 32
 EMBED_DIM = 32
+MAX_EPOCHS = 1
 
 
 def main():
@@ -65,7 +66,7 @@ def main():
     # scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 1, gamma=0.9)
 
     # Loss and optimizer
-    trainer = pl.Trainer(gpus=1, progress_bar_refresh_rate=20,
+    trainer = pl.Trainer(gpus=1, max_epochs=MAX_EPOCHS, progress_bar_refresh_rate=20,
                          callbacks=[lr_logger, early_stopping])
 
     # Auto log all MLflow entities
