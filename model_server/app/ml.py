@@ -73,9 +73,8 @@ def load_model(model_artifacts_path: Union[str, Path]):
     vocab = pickle.load(vocab_file.open("rb"))
 
     logger.info(f"Loading model file {model_file}")
-    model = torch.load(model_file)
+    model = torch.load(model_file, map_location="cpu")
     model.eval()
-    model = model.to("cpu")
 
     result = ModelWrapper(model, vocab)
 
