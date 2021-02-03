@@ -12,7 +12,13 @@ logger = logging.getLogger(__file__)
 app = FastAPI()
 
 
-MODEL = load_model(MLFLOW_MODEL_ARTIFACTS_PATH)
+MODEL = None
+
+
+@app.on_event("startup")
+async def startup():
+    global MODEL
+    MODEL = load_model(MLFLOW_MODEL_ARTIFACTS_PATH)
 
 
 @app.get("/ping")
@@ -32,7 +38,9 @@ async def predict(input: ModelInput):
         return {
             "text": input.dict(exclude_unset=True),
             "is_positive_review": model_output,
-            "model": {"mlflow_run_id": MLFLOW_MODEL_RUN_ID,}
+            "model": {
+                "mlflow_run_id": MLFLOW_MODEL_RUN_ID,
+            },
         }
 
 

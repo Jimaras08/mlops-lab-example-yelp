@@ -20,6 +20,7 @@ spec:
       initContainers:
         - name: git-clone
           image: python:3.7
+          restartPolicy: Never
           env:
             - name: GIT_REPO
               value: https://github.com/dmangonakis/Yelp_Dataset.git
@@ -43,6 +44,7 @@ spec:
               && ls /sources-root
         - name: model-download
           image: gcr.io/mlops-lab1-team3/yelp-dataset/model-server:v1.0
+          restartPolicy: Never
           volumeMounts:
             - name: models-root
               mountPath: /models-root
@@ -64,8 +66,6 @@ spec:
               && env | grep MLFLOW_
               && cp -r $(mlflow artifacts download --run-id "${MLFLOW_MODEL_RUN_ID}") -T /models-root
               && ls /models-root
-              && mkdir /models-root/code/src
-              && mv /models-root/code/* /models-root/code/src/
       containers:
         - name: main
           image: gcr.io/mlops-lab1-team3/yelp-dataset/model-server:v1.0
@@ -86,6 +86,8 @@ spec:
               value: /models-root/model
             - name: MLFLOW_MODEL_RUN_ID
               value: "${MLFLOW_MODEL_RUN_ID}"  # to be set via envsubst
+            - name: MLFLOW_MODEL_CODE_ROOT
+              value: /sources-root
             - name: SERVER_HOST
               value: "0.0.0.0"
             - name: SERVER_PORT

@@ -20,7 +20,6 @@ REQUIREMENTS_PATH = SRC_DIR.parent / "requirements.txt"
 MODEL_NAME = os.environ.get("MODEL_NAME", "yelp-model")
 MODEL_ARTIFACT_PATH = "model"
 
-PREDICT_FILE_NAME = __file__
 MODEL_FILE_NAME = "model.pth"
 VOCAB_FILE_NAME = "vocab.pkl"
 
@@ -30,7 +29,6 @@ def log_model(model):
         pytorch_model=model,
         artifact_path=MODEL_ARTIFACT_PATH,
         registered_model_name=MODEL_NAME,
-        code_paths=list(SRC_DIR.glob("**/*.py")),
         requirements_file=str(REQUIREMENTS_PATH),
     )
 
