@@ -6,6 +6,7 @@ from app.api import router_ping, router_predictions, router_statistics
 from app.constants import DEBUG
 from app.db import database, engine, metadata
 
+logging.basicConfig(level=logging.DEBUG if DEBUG else logging.INFO)
 metadata.create_all(engine)
 
 app = FastAPI()

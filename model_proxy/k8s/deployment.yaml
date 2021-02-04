@@ -75,6 +75,8 @@ spec:
               value: "8080"
             - name: SERVER_NUM_WORKERS
               value: "2"
+            - name: DEBUG
+              value: "1"
           command:
             - "/bin/bash"
             - "-euo"

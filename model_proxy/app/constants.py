@@ -1,5 +1,6 @@
 import os
 
+DEBUG = bool(os.environ.get("DEBUG", False))
 POSTGRES_HOST = os.environ.get("POSTGRES_HOST", "localhost")
 POSTGRES_PORT = int(os.environ.get("POSTGRES_PORT", 5432))
 POSTGRES_USER = os.environ.get("POSTGRES_USER", "mlflow-inference")
