@@ -15,7 +15,7 @@ MLOps Community Lab 1: Team 3: Yelp Review Classification
 The [first lab](https://github.com/mlopscommunity/engineering.labs/tree/master/Lab1_Operationalizing_Pytorch_with_Mlflow) was about integration of [PyTorch](https://pytorch.org/) with [MLflow](https://mlflow.org/). The ML problem to tackle was a free choice.
 
 ## Model Development
-Our team chose the Review classification problem based on [Yelp Dataset](https://www.yelp.com/dataset). The data consists of the list of reviews on restaurant, museums, hospitals, etc., and the number of stars associated with this review (0-5). We model this task as a classification problem: is the review positive (has >=3 stars) or negative (has <3 stars). Following the [torchtext tutorial](https://pytorch.org/tutorials/beginner/text_sentiment_ngrams_tutorial.html), we implemented a model consisting of 2 layers: `EmbeddingBag` and the linear layer. Please find the code in [./src](./src). Many thanks to @paulomaia20 for handling this! :nerd_face:
+Our team chose the Review classification problem based on [Yelp Dataset](https://www.yelp.com/dataset). The data consists of the list of reviews on restaurant, museums, hospitals, etc., and the number of stars associated with this review (0-5). We model this task as a classification problem: is the review positive (has >=3 stars) or negative (has <3 stars). Following the [torchtext tutorial](https://pytorch.org/tutorials/beginner/text_sentiment_ngrams_tutorial.html), we implemented a model consisting of 2 layers: `EmbeddingBag` and the linear layer (we decided not to use the [PyTorch Lightning](https://github.com/PyTorchLightning/pytorch-lightning) after having some tech difficulties with pickle and mlflow). Please find the code in [./src](./src). Many thanks to @paulomaia20 for handling this! :nerd_face:
 
 ## Web UI
 First of all, we implemented a small Web UI with [Streamlit](https://www.streamlit.io/) that defined the final goal of the project:
@@ -194,23 +194,60 @@ $ curl -s http://model-proxy.lab1-team3.neu.ro/statistics | jq
   }
 }
 ```
-Though this service does not implement any kind of authentication, and though its statistics calculation is rather straightforward, it serves the demo purposes well. Please find the code in [./model_proxy](./model_proxy). Kudos @artem-yushkovsky! :partying_face:
+Though this service does not implement any kind of authentication, and though its statistics calculation is rather straightforward (also, we would consider a distributed logging system based on ELK stack a better solution for adding business-level metadata to the model server), it serves the demo purposes well. Please find the code in [./model_proxy](./model_proxy). Kudos @artem-yushkovsky! :partying_face:
 
 ## Model Operator
-In order to add more MLOps flow to the project, we decided to implement a microservice that implements GitOps for MLflow: meet Model Operator! it constantly polls MLflow server to see which model has `Production` tag. Once this tag has changed, it changes the Model Server deployment in Kubernates and thus re-deploys the model. To illustrate this process, we exposed the logs of this service via [Webtail](https://github.com/LeKovr/webtail).
+In order to add more MLOps flow to the project, we decided to implement a microservice that implements GitOps for MLflow: meet Model Operator! This service follows the [Kubernetes Operator pattern](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/) and constantly polls MLflow server to see which model has `Production` tag. Once this tag has changed, it changes the Model Server deployment in Kubernates and thus re-deploys the model. To illustrate this process, we exposed the logs of this service via [Webtail](https://github.com/LeKovr/webtail).
 
 For example, we want to deploy the recently trained model of version 10. In MLflow UI, we change its `Stage` to `Production`:
 
 ![mlflow-deploy](img/mlflow-deploy.png) 
 
-This automatically triggers the model deployment:
+The Model Operator notices that the model has changed:
 
-![]
+![webtail-deploy](img/webtail-deploy.png)
+
+and it automatically triggers the model deployment:
+
+```bash
+NAME                                    READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/mlflow-model-operator   1/1     1            1           2m15s
+deployment.apps/mlflow-model-proxy      1/1     1            1           19h
+deployment.apps/mlflow-model-server     0/1     1            0           5s
+
+NAME                                         READY   STATUS        RESTARTS   AGE
+pod/mlflow-model-operator-6b988bcdbb-hbkjz   3/3     Running       0          2m15s
+pod/mlflow-model-proxy-646d4f9cd6-9xtmc      1/1     Running       0          19h
+pod/mlflow-model-server-65fd74f845-nvbwp     1/1     Terminating   0          95s
+pod/mlflow-model-server-75869b74fb-6cvhx     0/1     Init:1/2      0          5s
+
+NAME                                               DESIRED   CURRENT   READY   AGE
+replicaset.apps/mlflow-model-operator-6b988bcdbb   1         1         1       2m15s
+replicaset.apps/mlflow-model-proxy-646d4f9cd6      1         1         1       19h
+replicaset.apps/mlflow-model-server-75869b74fb     1         1         0       5s
+
+NAME                            TYPE           CLUSTER-IP      EXTERNAL-IP    PORT(S)        AGE
+service/mlflow-model-operator   LoadBalancer   10.104.2.23     34.91.157.40   80:32328/TCP   16h
+service/mlflow-model-proxy      LoadBalancer   10.104.14.129   34.91.75.82    80:31813/TCP   20h
+service/mlflow-model-server     ClusterIP      10.104.5.80     <none>         80/TCP         21h
+```
+
+To be honest, we were surprised not to find this kind of GitOps solution for MLflow+Kubernetes, and we keep believing that it exists but not yet discovered. Also, we need to mention that current solution disables the served model for a few minutes during the re-deployment process. There are other solutions, for example, [Seldon](https://github.com/SeldonIO/seldon-core), that implement zero-downtime model deployment with many other perks, but this goes beyond current demo project. 
+Please find the Model Operator service code in [./model_operator](./model_operator). Kudos @artem-yushkovsky! :space_invader:
 
 
-## Awesome Team 3
+# Conclusion
+During the work on this lab, we explored multiple awesome and open tools, we managed to create a complete MLOps pipeline from model development to model serving (note: data management and model monitoring are excluded from the scope of current project). We learned many things:
+- how to plan an ML project,
+- how to use your free tier credits to set up the infrastructure,
+- how to spend a few hours to develop a pytorch model and a few days debugging it,
+- how to build complex deployment solutions on top of kubernetes,
+- how to convert abstract discussions around the tech to a POC product,
+- and many other cool things! :tada:
+
+
+# Awesome Team 3
 - [Artem Yushkovskiy (@artem-yushkovsky)](https://github.com/artem-yushkovsky)
 - [Paulo Maia (@paulomaia20)](https://github.com/paulomaia20)
 - [Dimitrios Mangonakis (@dmangonakis)](https://github.com/dmangonakis)
 - [Laszlo Sragner (@xLaszlo)](https://github.com/xLaszlo)
-
