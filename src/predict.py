@@ -20,7 +20,6 @@ REQUIREMENTS_PATH = SRC_DIR.parent / "requirements.txt"
 MODEL_NAME = os.environ.get("MODEL_NAME", "yelp-model")
 MODEL_ARTIFACT_PATH = "model"
 
-PREDICT_FILE_NAME = __file__
 MODEL_FILE_NAME = "model.pth"
 VOCAB_FILE_NAME = "vocab.pkl"
 
@@ -30,7 +29,6 @@ def log_model(model):
         pytorch_model=model,
         artifact_path=MODEL_ARTIFACT_PATH,
         registered_model_name=MODEL_NAME,
-        code_paths=list(SRC_DIR.glob("**/*.py")),
         requirements_file=str(REQUIREMENTS_PATH),
     )
 
@@ -46,17 +44,17 @@ class ModelWrapper:
         time_started = time()
         tokenizer = get_tokenizer("basic_english")
         with torch.no_grad():
-            text = torch.tensor(
+            text_tensor = torch.tensor(
                 [
                     self.vocab[token]
                     for token in ngrams_iterator(tokenizer(text), NGRAMS)
                 ]
             )
-            output_tensor = self.model(text, torch.tensor([0]))
+            output_tensor = self.model(text_tensor, torch.tensor([0]))
             output = output_tensor.argmax(1).item()
             elapsed = time() - time_started
             logger.info(
-                f"ModelWrapper.predict: [elapsed {elapsed:.2f}s] "
-                f"len(text)={len(text)} answer={output}"
+                f"ModelWrapper.predict: [elapsed {elapsed:.2f}s]: "
+                f"len(text)={len(text)}, len(tokens)={len(text_tensor)}, answer={output}"
             )
             return output

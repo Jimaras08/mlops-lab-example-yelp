@@ -1,0 +1,111 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mlflow-model-server
+spec:
+  selector:
+    matchLabels:
+      run: mlflow-model-server
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: mlflow-model-server
+    spec:
+      volumes:
+        - name: sources-root
+          emptyDir: {}
+        - name: models-root
+          emptyDir: {}
+      initContainers:
+        - name: git-clone
+          image: python:3.7
+          env:
+            - name: GIT_REPO
+              value: https://github.com/dmangonakis/Yelp_Dataset.git
+            - name: GIT_BRANCH
+              value: "${GIT_BRANCH}"  # to be set via envsubst
+          volumeMounts:
+            - name: sources-root
+              mountPath: /sources-root
+          command:
+            - "/bin/bash"
+            - "-euo"
+            - "pipefail"
+            - "-o"
+            - "xtrace"
+            - "-c"
+            # Note: ${GIT_REPO} and ${GIT_BRANCH} to be set via envsubst
+            - >-
+              echo "Installing the app: ${GIT_REPO}@${GIT_BRANCH}"
+              && git clone --branch $GIT_BRANCH ${GIT_REPO} /sources-root
+              && ls /sources-root
+        - name: model-download
+          image: gcr.io/mlops-lab1-team3/yelp-dataset/model-server:v1.0
+          volumeMounts:
+            - name: models-root
+              mountPath: /models-root
+          env:
+            - name: MLFLOW_TRACKING_URI
+              value: http://mlflow.lab1-team3.neu.ro:5000
+            - name: MLFLOW_MODEL_RUN_ID
+              value: "${MLFLOW_MODEL_RUN_ID}"  # to be set via envsubst
+          command:
+            - "/bin/bash"
+            - "-euo"
+            - "pipefail"
+            - "-o"
+            - "xtrace"
+            - "-c"
+            # Note: ${GIT_REPO} and ${GIT_BRANCH} to be set via envsubst
+            - >-
+              echo "Downloading model of run-id: ${MLFLOW_MODEL_RUN_ID}"
+              && env | grep MLFLOW_
+              && cp -r $(mlflow artifacts download --run-id "${MLFLOW_MODEL_RUN_ID}") -T /models-root
+              && ls /models-root
+      containers:
+        - name: main
+          image: gcr.io/mlops-lab1-team3/yelp-dataset/model-server:v1.0
+          ports:
+          - containerPort: 8080
+          volumeMounts:
+            - name: sources-root
+              mountPath: /sources-root
+            - name: models-root
+              mountPath: /models-root
+          resources:
+            requests:
+              memory: "2000Mi"
+            limits:
+              memory: "3000Mi"
+          env:
+            - name: MLFLOW_MODEL_ARTIFACTS_PATH
+              value: /models-root/model
+            - name: MLFLOW_MODEL_RUN_ID
+              value: "${MLFLOW_MODEL_RUN_ID}"  # to be set via envsubst
+            - name: MLFLOW_MODEL_CODE_ROOT
+              value: /sources-root
+            - name: SERVER_HOST
+              value: "0.0.0.0"
+            - name: SERVER_PORT
+              value: "8080"
+            - name: SERVER_NUM_WORKERS
+              value: "2"
+          command:
+            - "/bin/bash"
+            - "-euo"
+            - "pipefail"
+            - "-o"
+            - "xtrace"
+            - "-c"
+            - >-
+              echo "Running the app"
+              && env | grep SERVER_
+              && env | grep MODEL_
+              && cd /sources-root/model_server
+              && uvicorn app.main:app \
+                  --host ${SERVER_HOST} \
+                  --port ${SERVER_PORT} \
+                  --workers ${SERVER_NUM_WORKERS} \
+                  --access-log \
+                  --use-colors

@@ -1,4 +1,4 @@
-#spacy==2.3.5
+spacy==2.3.5
 #dill==0.3.3
 torch==1.6
 torchtext==0.7
