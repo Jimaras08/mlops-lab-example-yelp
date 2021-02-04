@@ -13,4 +13,4 @@ ENV PYTHONUNBUFFERED=1
 
 ENTRYPOINT ["streamlit", "run"]
 
-WORKDIR /appl/
+#WORKDIR /appl/
