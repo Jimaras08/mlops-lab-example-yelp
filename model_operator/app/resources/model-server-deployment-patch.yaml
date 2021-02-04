@@ -1,0 +1,15 @@
+spec:
+  template:
+    spec:
+      initContainers:
+      - name: model-download
+        image: gcr.io/mlops-lab1-team3/yelp-dataset/model-server:v1.0
+        env:
+          - name: MLFLOW_MODEL_RUN_ID
+            value: {{ run_id }}
+      containers:
+      - name: main
+        image: gcr.io/mlops-lab1-team3/yelp-dataset/model-server:v1.0
+        env:
+          - name: MLFLOW_MODEL_RUN_ID
+            value: {{ run_id }}

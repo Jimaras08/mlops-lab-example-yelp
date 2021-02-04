@@ -1,6 +1,3 @@
-MAKEFILE_PATH = $(abspath $(lastword $(MAKEFILE_LIST)))
-MAKEFILE_DIR = $(dir $(MAKEFILE_PATH))
-
 IMAGE_LOCAL = yelp-dataset/model-proxy:v1.0
 IMAGE_GCR = gcr.io/mlops-lab1-team3/$(IMAGE_LOCAL)
 
@@ -23,8 +20,7 @@ GIT_BRANCH = $(shell git branch --show-current)
 
 .PHONY: build-image
 build-image:
-	cd $(MAKEFILE_DIR) \
-        && docker build . -t $(IMAGE_LOCAL)
+	docker build . -t $(IMAGE_LOCAL)
 
 .PHONY: push-image
 push-image:
@@ -54,8 +50,7 @@ k8s-up-deployment: require-POSTGRES_HOST require-POSTGRES_PORT
 k8s-up-deployment: require-MODEL_HOST require-MODEL_PORT
 k8s-up-deployment:
 	echo "Deploying from branch origin/$(GIT_BRANCH)"
-	cd $(MAKEFILE_DIR) \
-        && export GIT_BRANCH=$(GIT_BRANCH) \
+	export GIT_BRANCH=$(GIT_BRANCH) \
         && export POSTGRES_HOST=$(POSTGRES_HOST) \
         && export POSTGRES_PORT=$(POSTGRES_PORT) \
         && export MODEL_HOST=$(MODEL_HOST) \
@@ -74,8 +69,7 @@ k8s-down-deployment:
 .PHONY: k8s-up-service
 k8s-up-service:
 	echo "Deploying from branch origin/$(GIT_BRANCH)"
-	cd $(MAKEFILE_DIR) \
-        && kubectl -n $(K8S_NS) apply -f k8s/service.yaml
+	kubectl -n $(K8S_NS) apply -f k8s/service.yaml
 	kubectl -n $(K8S_NS) get svc
 
 .PHONY: k8s-down-service

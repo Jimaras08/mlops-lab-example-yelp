@@ -1,5 +1,6 @@
 apiVersion: apps/v1
 kind: Deployment
+# TODO: different namespaces to isolate model_operator
 metadata:
   name: mlflow-model-server
 spec:
@@ -7,6 +8,9 @@ spec:
     matchLabels:
       run: mlflow-model-server
   replicas: 1
+  strategy:
+    type: RollingUpdate
+    # TODO: max availablilty
   template:
     metadata:
       labels:
@@ -21,6 +25,7 @@ spec:
         - name: git-clone
           image: python:3.7
           env:
+            # TODO: use shared configmap
             - name: GIT_REPO
               value: https://github.com/dmangonakis/Yelp_Dataset.git
             - name: GIT_BRANCH
@@ -38,7 +43,7 @@ spec:
             # Note: ${GIT_REPO} and ${GIT_BRANCH} to be set via envsubst
             - >-
               echo "Installing the app: ${GIT_REPO}@${GIT_BRANCH}"
-              && git clone --branch $GIT_BRANCH ${GIT_REPO} /sources-root
+              && git clone --branch ${GIT_BRANCH} ${GIT_REPO} /sources-root
               && ls /sources-root
         - name: model-download
           image: gcr.io/mlops-lab1-team3/yelp-dataset/model-server:v1.0
@@ -49,7 +54,10 @@ spec:
             - name: MLFLOW_TRACKING_URI
               value: http://mlflow.lab1-team3.neu.ro:5000
             - name: MLFLOW_MODEL_RUN_ID
-              value: "${MLFLOW_MODEL_RUN_ID}"  # to be set via envsubst
+              valueFrom:
+                configMapKeyRef:
+                  name: mlflow-model-server
+                  key: MLFLOW_MODEL_RUN_ID
           command:
             - "/bin/bash"
             - "-euo"
@@ -79,10 +87,13 @@ spec:
             limits:
               memory: "3000Mi"
           env:
+            - name: MLFLOW_MODEL_RUN_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: mlflow-model-server
+                  key: MLFLOW_MODEL_RUN_ID
             - name: MLFLOW_MODEL_ARTIFACTS_PATH
               value: /models-root/model
-            - name: MLFLOW_MODEL_RUN_ID
-              value: "${MLFLOW_MODEL_RUN_ID}"  # to be set via envsubst
             - name: MLFLOW_MODEL_CODE_ROOT
               value: /sources-root
             - name: SERVER_HOST

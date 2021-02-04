@@ -1,0 +1,123 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: mlflow-model-operator
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mlflow-model-operator
+spec:
+  selector:
+    matchLabels:
+      run: mlflow-model-operator
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: mlflow-model-operator
+    spec:
+      serviceAccountName: mlflow-model-operator
+      volumes:
+        - name: sources-root
+          emptyDir: {}
+        - name: shared-mem
+          emptyDir: {}
+      initContainers:
+        - name: git-clone
+          image: python:3.7
+          env:
+            - name: GIT_REPO
+              value: https://github.com/dmangonakis/Yelp_Dataset.git
+            - name: GIT_BRANCH
+              value: "${GIT_BRANCH}"  # to be set via envsubst
+          volumeMounts:
+            - name: sources-root
+              mountPath: /sources-root
+          command:
+            - "/bin/bash"
+            - "-euo"
+            - "pipefail"
+            - "-o"
+            - "xtrace"
+            - "-c"
+            # Note: ${GIT_REPO} and ${GIT_BRANCH} to be set via envsubst
+            - >-
+              echo "Installing the app: ${GIT_REPO}@${GIT_BRANCH}"
+              && git clone --branch ${GIT_BRANCH} ${GIT_REPO} /sources-root
+              && ls /sources-root
+      containers:
+        - name: main
+          image: gcr.io/mlops-lab1-team3/yelp-dataset/model-operator:v1.1
+          volumeMounts:
+            - name: sources-root
+              mountPath: /sources-root
+            - name: shared-mem
+              mountPath: /shared-mem
+          env:
+            - name: PYTHONPATH
+              value: /sources-root/model_operator
+            - name: POLLER_DELAY
+              value: "5"
+            - name: K8S_NS
+              value: mlflow-model
+            - name: GIT_BRANCH
+              value: "${GIT_BRANCH}"  # to be set via envsubst
+            - name: MODELSERVER_CONFIGMAP_TEMPLATE_PATH
+              value: /sources-root/model_operator/app/resources/model-server-configmap.yaml
+            - name: MS_DEPLOYMENT_TEMPLATE_PATH
+              value: /sources-root/model_operator/app/resources/model-server-deployment-patch.yaml
+            - name: MODELSERVER_DEPLOYMENT_PATH
+              value: /sources-root/model_server/k8s/deployment.yaml
+            - name: MODELSERVER_CONFIGMAP_NAME
+              value: mlflow-model-server
+            - name: MODELSERVER_DEPLOYMENT_NAME
+              value: mlflow-model-server
+            - name: MLFLOW_TRACKING_URI
+              value: http://mlflow.lab1-team3.neu.ro:5000
+            - name: MLFLOW_MODEL_NAME
+              value: yelp-model
+          command:
+            - "/bin/bash"
+            - "-euo"
+            - "pipefail"
+            - "-o"
+            - "xtrace"
+            - "-c"
+            - >-
+              echo "Running the app"
+              && env | grep POLLER_
+              && env | grep MLFLOW_MODEL_
+              && env | grep MODELSERVER_
+              && cd /sources-root/model_operator
+              && python app/main.py 2>&1 | tee /shared-mem/model-operator.log
+
+        - name: watch-kubectl
+          image: gcr.io/mlops-lab1-team3/yelp-dataset/model-operator:v1.1
+          volumeMounts:
+            - name: shared-mem
+              mountPath: /shared-mem
+          env:
+            - name: K8S_NS
+              value: mlflow-model
+            - name: TERM
+              value: linux
+            - name: RESOURCE
+              value: po  # deployments,pods,rs,svc
+          command:
+            - "/bin/bash"
+            - "-c"
+            - >-
+              while kubectl -n ${K8S_NS} get ${RESOURCE} | tee -a /shared-mem/watch-kubectl.log;
+              do
+                sleep 2;
+                echo -e "------------------------------------" >> /shared-mem/watch-kubectl.log;
+              done
+
+        - name: webtail
+          image: lekovr/webtail:0.43.1
+          ports:
+          - containerPort: 8080
+          volumeMounts:
+            - name: shared-mem
+              mountPath: /log
