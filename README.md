@@ -5,8 +5,7 @@ MLOps Community Lab 1: Team 3: Yelp Review Classification
 [MLOps Community](https://mlops.community/) :tada: is an open, free and transparent place for MLOps practitioners can collaborate on experiences and best practices around MLOps (DevOps for ML).
 
 # Awesome Labs Initiative
-g
-[Labs Initiative](https://github.com/mlopscommunity/engineering.labs) is an educational project pursuing [three goals](https://mlops-community.slack.com/archives/C0198RL5Y01/p1607941366069400):
+[Engineering Labs Initiative](https://github.com/mlopscommunity/engineering.labs) is an educational project pursuing [three goals](https://mlops-community.slack.com/archives/C0198RL5Y01/p1607941366069400):
 1. have fun :partying_face:
 2. learn :nerd_face:
 3. share :handshake:
