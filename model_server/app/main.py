@@ -1,4 +1,5 @@
 import logging
+from time import time
 
 import uvicorn
 from fastapi import FastAPI, HTTPException
@@ -29,7 +30,9 @@ def ping():
 @app.post("/predict")
 async def predict(input: ModelInput):
     try:
+        time_started = time()
         model_output = MODEL.predict(input.text)
+        elapsed = time() - time_started
     except BaseException as e:
         detail = f"Unknown model prediction error: {e}"
         logger.exception(detail)
@@ -40,6 +43,7 @@ async def predict(input: ModelInput):
             "is_positive_review": model_output,
             "details": {
                 "mlflow_run_id": MLFLOW_MODEL_RUN_ID,
+                "inference_elapsed": float(f"{elapsed:.3f}"),
             },
         }
 

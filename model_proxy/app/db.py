@@ -11,7 +11,7 @@ from sqlalchemy import (
     create_engine,
     DateTime,
     func,
-)
+    Float)
 
 from app.constants import DATABASE_URL, POSTGRES_TABLE
 
@@ -30,7 +30,8 @@ predicts = Table(
     Column("is_positive_user_answered", Boolean),
     Column("is_positive_model_answered", Boolean),
     Column("mlflow_run_id", String(length=32)),
-    Column("timestamp_utc", DateTime, default=func.now(), nullable=False),
+    Column("inference_elapsed", Float),
+    Column("timestamp", DateTime, default=func.now(), nullable=False),
 )
 
 # databases query builder

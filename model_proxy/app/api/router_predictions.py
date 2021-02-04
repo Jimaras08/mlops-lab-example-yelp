@@ -12,6 +12,7 @@ router = APIRouter()
 
 @router.post("", status_code=201)
 async def predict(payload: PredictRequestSchema):
+    timestamp = datetime.utcnow()
     text = payload.text
     output = model_predict(text)
     prediction = PredictResponseSchema(
@@ -19,7 +20,7 @@ async def predict(payload: PredictRequestSchema):
         is_positive_user_answered=payload.is_positive_user_answered,
         is_positive_model_answered=output["is_positive_review"] == 1,
         mlflow_run_id=output["details"]["mlflow_run_id"],
-        timestamp_utc=datetime.utcnow(),
+        timestamp=timestamp,
     )
     pred_id = await crud.post(prediction)
 
@@ -32,7 +33,8 @@ async def predict(payload: PredictRequestSchema):
         },
         "details": {
             "mlflow_run_id": prediction.mlflow_run_id,
-            "timestamp_utc": prediction.timestamp_utc,
+            "inference_elapsed": prediction.inference_elapsed,
+            "timestamp": prediction.timestamp,
         },
     }
     return response_object

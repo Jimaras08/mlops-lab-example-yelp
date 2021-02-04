@@ -17,5 +17,6 @@ def model_predict(text: str):
         "is_positive_review": output["is_positive_review"],
         "details": {
             "mlflow_run_id": output["details"]["mlflow_run_id"],
+            "inference_elapsed": output["details"]["inference_elapsed"],
         },
     }
