@@ -34,7 +34,7 @@ spec:
             # Note: ${GIT_REPO} and ${GIT_BRANCH} to be set via envsubst
             - >-
               echo "Installing the app: ${GIT_REPO}@${GIT_BRANCH}"
-              && git clone --branch $GIT_BRANCH ${GIT_REPO} /tmp/project
+              && git clone --branch ${GIT_BRANCH} ${GIT_REPO} /tmp/project
               && mv /tmp/project/model_proxy /sources
               && ls /sources
       containers:
