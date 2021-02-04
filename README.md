@@ -147,7 +147,7 @@ $ curl -s -X POST -H "Content-Type: application/json" -d '{"text": "very cool re
   }
 }
 ```
-This service is running in Kubernetes as a 1-replica deployment with a service providing load balancing with a static internal IP, so, if needed, it can be easily scaled horizontally. Thanks [@artem-yushkovsky](https://github.com/artem-yushkovsky] :tada:
+This service is running in Kubernetes as a 1-replica deployment with a service providing load balancing with a static internal IP, so, if needed, it can be easily scaled horizontally. Thanks [@artem-yushkovsky](https://github.com/artem-yushkovsky) :tada:
 
 ## Model Proxy
 In order to add some business-logic to the model deployment, we implemented an additional abstraction layer - the model proxy. It's a thicker REST API service with access to a PostgreSQL database to store and serve prediction results. This service accesses the model via REST API over internal network and calculates some small statistics on the prediction correctness:
@@ -232,7 +232,7 @@ service/mlflow-model-server     ClusterIP      10.104.5.80     <none>         80
 ```
 
 To be honest, we were surprised not to find this kind of GitOps solution for MLflow+Kubernetes, and we keep believing that it exists but not yet discovered. Also, we need to mention that current solution disables the served model for a few minutes during the re-deployment process. There are other solutions, for example, [Seldon](https://github.com/SeldonIO/seldon-core), that implement zero-downtime model deployment with many other perks, but this goes beyond current demo project. 
-Please find the Model Operator service code in [./model_operator](./model_operator). Nice job [@artem-yushkovsky](https://github.com/artem-yushkovsky]! :space_invader:
+Please find the Model Operator service code in [./model_operator](./model_operator). Nice job [@artem-yushkovsky](https://github.com/artem-yushkovsky)! :space_invader:
 
 
 # Conclusion
