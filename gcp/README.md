@@ -130,9 +130,6 @@ helm install \
 Note `EXTERNAL-IP`: to access the MLFlow service, use `http://34.91.123.207:5000`
 
 
-# Use MLFlow to train models
-see mlflow-example/
-
 # Uninstall MLFlow Deployment
 ```sh
 helm -n mlflow uninstall mlflow

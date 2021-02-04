@@ -22,6 +22,18 @@ push-image:
 ## Run training on Neu.ro platform
 #
 
-.PHONY: train
-train:
+.PHONY: neuro-setup
+neuro-setup:
+	sh ./scripts/neuro/00_setup.sh
+
+.PHONY: neuro-train
+neuro-train:
 	sh ./scripts/neuro/gpu_train.sh
+
+.PHONY: neuro-server
+neuro-server:
+	sh ./scripts/neuro/gpu_server.sh
+
+.PHONY: neuro-jupyter
+neuro-jupyter:
+	sh ./scripts/neuro/gpu_jupyter.sh
