@@ -90,5 +90,4 @@ spec:
               && uvicorn app.main:app \
                   --host ${SERVER_HOST} \
                   --port ${SERVER_PORT} \
-                  --workers ${SERVER_NUM_WORKERS} \
-                  --log-level=debug
+                  --workers ${SERVER_NUM_WORKERS}

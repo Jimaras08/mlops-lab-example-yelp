@@ -36,7 +36,7 @@ async def predict(input: ModelInput):
         raise HTTPException(status_code=500, detail=detail)
     else:
         return {
-            "text": input.dict(exclude_unset=True),
+            "text": input.text,
             "is_positive_review": model_output,
             "details": {
                 "mlflow_run_id": MLFLOW_MODEL_RUN_ID,
