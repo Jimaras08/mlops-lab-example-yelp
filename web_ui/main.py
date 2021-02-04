@@ -15,8 +15,8 @@ from sqlalchemy import create_engine
 API_ENDPOINT = 'http://model-proxy.lab1-team3.neu.ro/predict'
 
 ### Frontend ###
-image = Image.open("src/app/yelp.png")
-# image = Image.open("yelp.png")
+# image = Image.open("src/app/yelp.png")
+image = Image.open("yelp.png")
 
 st.image(image, caption="Does the AI think your review positive or negative?", use_column_width=True)
 
