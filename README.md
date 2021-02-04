@@ -5,8 +5,7 @@ MLOps Community Lab 1: Team 3: Yelp Review Classification
 [MLOps Community](https://mlops.community/) :tada: is an open, free and transparent place for MLOps practitioners can collaborate on experiences and best practices around MLOps (DevOps for ML).
 
 # Awesome Labs Initiative
-
-[Labs Initiative](https://github.com/mlopscommunity/engineering.labs) is an educational project pursuing [three goals](https://mlops-community.slack.com/archives/C0198RL5Y01/p1607941366069400):
+[Engineering Labs Initiative](https://github.com/mlopscommunity/engineering.labs) is an educational project pursuing [three goals](https://mlops-community.slack.com/archives/C0198RL5Y01/p1607941366069400):
 1. have fun :partying_face:
 2. learn :nerd_face:
 3. share :handshake:
@@ -15,18 +14,18 @@ MLOps Community Lab 1: Team 3: Yelp Review Classification
 The [first lab](https://github.com/mlopscommunity/engineering.labs/tree/master/Lab1_Operationalizing_Pytorch_with_Mlflow) was about integration of [PyTorch](https://pytorch.org/) with [MLflow](https://mlflow.org/). The ML problem to tackle was a free choice.
 
 ## Model Development
-Our team chose the Review classification problem based on [Yelp Dataset](https://www.yelp.com/dataset). The data consists of the list of reviews on restaurant, museums, hospitals, etc., and the number of stars associated with this review (0-5). We model this task as a classification problem: is the review positive (has >=3 stars) or negative (has <3 stars). Following the [torchtext tutorial](https://pytorch.org/tutorials/beginner/text_sentiment_ngrams_tutorial.html), we implemented a model consisting of 2 layers: `EmbeddingBag` and the linear layer (we decided not to use the [PyTorch Lightning](https://github.com/PyTorchLightning/pytorch-lightning) after having some tech difficulties with pickle and mlflow). Please find the code in [./src](./src). Many thanks to @paulomaia20 for handling this! :nerd_face:
+Our team chose the Review classification problem based on [Yelp Dataset](https://www.yelp.com/dataset). The data consists of the list of reviews on restaurant, museums, hospitals, etc., and the number of stars associated with this review (0-5). We model this task as a binary classification problem: is the review positive (has >=3 stars) or negative (has <3 stars). Following the [torchtext tutorial](https://pytorch.org/tutorials/beginner/text_sentiment_ngrams_tutorial.html), we implemented a model consisting of 2 layers: `EmbeddingBag` and a linear layer, followed by a sigmoid activation function (using [PyTorch Lightning](https://github.com/PyTorchLightning/pytorch-lightning). Please find the code in [./src](./src). Many thanks to [@paulomaia20](https://github.com/paulomaia20) for handling this! :nerd_face:
 
 ## Web UI
 First of all, we implemented a small Web UI with [Streamlit](https://www.streamlit.io/) that defined the final goal of the project:
 
 ![streamlit](img/streamlit.png)
 
-This Web UI is written in somewhat 50 lines of Python code! It uses REST API to access the deployed Model Proxy service, which provides both model inference and statistics calculation. The Web UI is deployed via [Streamlit Sharing](https://blog.streamlit.io/introducing-streamlit-sharing/). Thanks @dmangonakis for the implementation! :sunglasses:
+This Web UI is written in somewhat 50 lines of Python code! It uses REST API to access the deployed Model Proxy service, which provides both model inference and statistics calculation. The Web UI is deployed via [Streamlit Sharing](https://blog.streamlit.io/introducing-streamlit-sharing/). Thanks [@dmangonakis](https://github.com/dmangonakis) for the implementation! :sunglasses:
 
 
 ## Infrastructure
-We absolutely :heart: [Kubernetes](https://kubernetes.io/). And for this task, we couldn't resist not to use it. So we created a kubernetes cluster in GCP (thanks Google for [$300 free credit](https://cloud.google.com/free)), used [helm charts](https://larribas.me/helm-charts) to deploy MLflow server backed by managed PostgreSQL database as backend store and GCS bucket as artifact store. All services were exposed via public IP (thanks [Neu.ro](https://neu.ro) for adding the A-records into their DNS table for getting cool `.neu.ro` domain names!). See [./gcp](./gcp) for details. Thanks @artem-yushkovsky for setting this up! :cowboy_hat_face:
+We absolutely :heart: [Kubernetes](https://kubernetes.io/). And for this task, we couldn't resist not to use it. So we created a kubernetes cluster in GCP (thanks Google for [$300 free credit](https://cloud.google.com/free)), used [helm charts](https://larribas.me/helm-charts) to deploy MLflow server backed by managed PostgreSQL database as backend store and GCS bucket as artifact store. All services were exposed via public IP (thanks [Neu.ro](https://neu.ro) for adding the A-records into their DNS table for getting cool `.neu.ro` domain names!). See [./gcp](./gcp) for details. Thanks [@artem-yushkovsky](https://github.com/artem-yushkovsky) for setting this up! :cowboy_hat_face:
 
 ```bash
 $ kubectl -n mlflow get all             
@@ -148,7 +147,7 @@ $ curl -s -X POST -H "Content-Type: application/json" -d '{"text": "very cool re
   }
 }
 ```
-This service is running in Kubernetes as a 1-replica deployment with a service providing load balancing with a static internal IP, so, if needed, it can be easily scaled horizontally. Thanks @artem-yushkovsky :tada:
+This service is running in Kubernetes as a 1-replica deployment with a service providing load balancing with a static internal IP, so, if needed, it can be easily scaled horizontally. Thanks [@artem-yushkovsky](https://github.com/artem-yushkovsky) :tada:
 
 ## Model Proxy
 In order to add some business-logic to the model deployment, we implemented an additional abstraction layer - the model proxy. It's a thicker REST API service with access to a PostgreSQL database to store and serve prediction results. This service accesses the model via REST API over internal network and calculates some small statistics on the prediction correctness:
@@ -194,7 +193,7 @@ $ curl -s http://model-proxy.lab1-team3.neu.ro/statistics | jq
   }
 }
 ```
-Though this service does not implement any kind of authentication, and though its statistics calculation is rather straightforward (also, we would consider a distributed logging system based on ELK stack a better solution for adding business-level metadata to the model server), it serves the demo purposes well. Please find the code in [./model_proxy](./model_proxy). Kudos @artem-yushkovsky! :partying_face:
+Though this service does not implement any kind of authentication, and though its statistics calculation is rather straightforward (also, we would consider a distributed logging system based on ELK stack a better solution for adding business-level metadata to the model server), it serves the demo purposes well. Please find the code in [./model_proxy](./model_proxy). Kudos [@artem-yushkovsky](https://github.com/artem-yushkovsky)! :partying_face:
 
 ## Model Operator
 In order to add more MLOps flow to the project, we decided to implement a microservice that implements GitOps for MLflow: meet Model Operator! This service follows the [Kubernetes Operator pattern](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/) and constantly polls MLflow server to see which model has `Production` tag. Once this tag has changed, it changes the Model Server deployment in Kubernates and thus re-deploys the model. To illustrate this process, we exposed the logs of this service via [Webtail](https://github.com/LeKovr/webtail).
@@ -233,7 +232,7 @@ service/mlflow-model-server     ClusterIP      10.104.5.80     <none>         80
 ```
 
 To be honest, we were surprised not to find this kind of GitOps solution for MLflow+Kubernetes, and we keep believing that it exists but not yet discovered. Also, we need to mention that current solution disables the served model for a few minutes during the re-deployment process. There are other solutions, for example, [Seldon](https://github.com/SeldonIO/seldon-core), that implement zero-downtime model deployment with many other perks, but this goes beyond current demo project. 
-Please find the Model Operator service code in [./model_operator](./model_operator). Kudos @artem-yushkovsky! :space_invader:
+Please find the Model Operator service code in [./model_operator](./model_operator). Nice job [@artem-yushkovsky](https://github.com/artem-yushkovsky)! :space_invader:
 
 
 # Conclusion
