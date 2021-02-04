@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List
 
 from fastapi import APIRouter, HTTPException, Path
@@ -10,7 +11,7 @@ router = APIRouter()
 
 
 @router.post("", status_code=201)
-async def create_prediction(payload: PredictRequestSchema):
+async def predict(payload: PredictRequestSchema):
     text = payload.text
     output = model_predict(text)
     prediction = PredictResponseSchema(
@@ -18,6 +19,7 @@ async def create_prediction(payload: PredictRequestSchema):
         is_positive_user_answered=payload.is_positive_user_answered,
         is_positive_model_answered=output["is_positive_review"] == 1,
         mlflow_run_id=output["details"]["mlflow_run_id"],
+        timestamp_utc=datetime.utcnow(),
     )
     pred_id = await crud.post(prediction)
 
@@ -30,7 +32,7 @@ async def create_prediction(payload: PredictRequestSchema):
         },
         "details": {
             "mlflow_run_id": prediction.mlflow_run_id,
-            "timestamp": prediction.timestamp,
+            "timestamp_utc": prediction.timestamp_utc,
         },
     }
     return response_object

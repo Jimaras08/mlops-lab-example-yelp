@@ -11,7 +11,7 @@ class PredictRequestSchema(BaseModel):
 class PredictResponseSchema(PredictRequestSchema):
     is_positive_model_answered: bool
     mlflow_run_id: str = Field(..., min_length=32, max_length=32)
-    timestamp: datetime
+    timestamp_utc: datetime
 
 
 class PredictDB(PredictResponseSchema):

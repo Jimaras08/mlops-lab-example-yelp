@@ -30,7 +30,7 @@ predicts = Table(
     Column("is_positive_user_answered", Boolean),
     Column("is_positive_model_answered", Boolean),
     Column("mlflow_run_id", String(length=32)),
-    Column("timestamp", DateTime, default=func.now(), nullable=False),
+    Column("timestamp_utc", DateTime, default=func.now(), nullable=False),
 )
 
 # databases query builder
