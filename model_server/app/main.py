@@ -43,7 +43,7 @@ async def predict(input: ModelInput):
             "is_positive_review": model_output,
             "details": {
                 "mlflow_run_id": MLFLOW_MODEL_RUN_ID,
-                "inference_elapsed": float(f"{elapsed:.3f}"),
+                "inference_elapsed": elapsed,
             },
         }
 

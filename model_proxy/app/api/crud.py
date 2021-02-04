@@ -8,6 +8,8 @@ async def post(payload: PredictResponseSchema):
         is_positive_user_answered=payload.is_positive_user_answered,
         is_positive_model_answered=payload.is_positive_model_answered,
         mlflow_run_id=payload.mlflow_run_id,
+        inference_elapsed=payload.inference_elapsed,
+        timestamp=payload.timestamp,
     )
     return await database.execute(query=query)
 
