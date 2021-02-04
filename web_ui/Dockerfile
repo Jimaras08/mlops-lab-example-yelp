@@ -3,7 +3,7 @@ FROM python:3.8-slim-buster
 EXPOSE 8501
 #EXPOSE 5432
 
-WORKDIR /source/app
+WORKDIR /web_ui
 
 COPY . .
 
