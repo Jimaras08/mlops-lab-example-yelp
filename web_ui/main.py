@@ -32,7 +32,28 @@ today = datetime.today().strftime("%Y-%m-%d")
 
 if st.button("Let me tell you!") and user_input:
 
+    # See REST API instructions here: https://github.com/dmangonakis/Yelp_Dataset/pull/20
+
+    # NOTE!!! Model API URI will change today from 'http://34.91.75.82' to 'http://model-proxy.lab1-team3.neu.ro'
+
     sentiment = requests.post(API_ENDPOINT, {'text': user_input}).model_output_is_positive
+    # To do inference:
+    # $ curl -X POST -H "Content-Type: application/json" \
+    #   -d '{"text": "awful disguisting cafe", "is_positive_user_answered": false}' \
+    #   http://34.91.75.82/predictions | jq
+    # {
+    #   "id": 7,
+    #   "text": "awful disguisting cafe",
+    #   "is_positive": {
+    #     "user_answered": false,
+    #     "model_answered": false
+    #   },
+    #   "details": {
+    #     "mlflow_run_id": "3acade02674549b19044a59186d97db4",
+    #     "inference_elapsed": 0.0010228157043457031,
+    #     "timestamp": "2021-02-04T06:15:36.160586"
+    #   }
+    # }
 
     if user_prediction == sentiment:
         st.write(
@@ -43,16 +64,6 @@ if st.button("Let me tell you!") and user_input:
             f"Not quite! The AI estimates this review is positive with probability."
         )
 
-    """
-    db.execute(
-        f"INSERT INTO stats VALUES ('{today}', '{user_input}', {model_prediction}, {sentiment}, {user_prediction})"
-    )
-    true_predictions = db.execute(
-        "SELECT count(*) FROM stats where sentiment = user_prediction"
-    ).fetchone()["count"]
-    total_predictions = db.execute("SELECT count(*) FROM stats").fetchone()["count"]
-    st.write(
-        f"Cool, we have now {round(100*true_predictions/total_predictions)} % correct predictions!"
-    )
-    st.write(f"Number of total predictions: {total_predictions}.")
-    """
+    # To get statistics:
+    # $ curl http://34.91.75.82/statistics
+    # {"statistics":{"correctness_rate":0.8}}
