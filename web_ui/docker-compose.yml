@@ -2,6 +2,6 @@ version: "3"
 services:
   streamlit:
     build: .
-    command: "streamlit run src/app/main.py"
+    command: "streamlit run web_ui/main.py"
     ports:
       - "8501:8501"
