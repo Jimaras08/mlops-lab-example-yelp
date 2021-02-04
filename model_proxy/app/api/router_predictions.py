@@ -20,6 +20,7 @@ async def predict(payload: PredictRequestSchema):
         is_positive_user_answered=payload.is_positive_user_answered,
         is_positive_model_answered=output["is_positive_review"] == 1,
         mlflow_run_id=output["details"]["mlflow_run_id"],
+        inference_elapsed=output["details"]["inference_elapsed"],
         timestamp=timestamp,
     )
     pred_id = await crud.post(prediction)
