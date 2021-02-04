@@ -26,10 +26,9 @@ async def get_correctness_rate():
     query_total = predicts.count()
     total = await database.fetch_val(query=query_total)
     if not total:
-        return 0.0
+        return None
     query_total_correct = predicts.count().where(
-        # predicts.c.model_output_is_positive ==
-        predicts.c.ground_truth_is_positive
+        predicts.c.is_positive_model_answered == predicts.c.is_positive_user_answered
     )
     total_correct = await database.fetch_val(query=query_total_correct)
     return total_correct / total
