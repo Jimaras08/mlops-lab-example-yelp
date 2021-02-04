@@ -5,7 +5,7 @@ MLOps Community Lab 1: Team 3: Yelp Review Classification
 [MLOps Community](https://mlops.community/) :tada: is an open, free and transparent place for MLOps practitioners can collaborate on experiences and best practices around MLOps (DevOps for ML).
 
 # Awesome Labs Initiative
-
+g
 [Labs Initiative](https://github.com/mlopscommunity/engineering.labs) is an educational project pursuing [three goals](https://mlops-community.slack.com/archives/C0198RL5Y01/p1607941366069400):
 1. have fun :partying_face:
 2. learn :nerd_face:
@@ -26,7 +26,7 @@ This Web UI is written in somewhat 50 lines of Python code! It uses REST API to 
 
 
 ## Infrastructure
-We absolutely :heart: [Kubernetes](https://kubernetes.io/). And for this task, we couldn't resist not to use it. So we created a kubernetes cluster in GCP (thanks Google for [$300 free credit](https://cloud.google.com/free)), used [helm charts](https://larribas.me/helm-charts) to deploy MLflow server backed by managed PostgreSQL database as backend store and GCS bucket as artifact store. All services were exposed via public IP (thanks [Neu.ro](https://neu.ro) for adding the A-records into their DNS table for getting cool `.neu.ro` domain names!). See [./gcp](./gcp) for details. Thanks [@artem-yushkovsky](https://github.com/artem-yushkovsky] for setting this up! :cowboy_hat_face:
+We absolutely :heart: [Kubernetes](https://kubernetes.io/). And for this task, we couldn't resist not to use it. So we created a kubernetes cluster in GCP (thanks Google for [$300 free credit](https://cloud.google.com/free)), used [helm charts](https://larribas.me/helm-charts) to deploy MLflow server backed by managed PostgreSQL database as backend store and GCS bucket as artifact store. All services were exposed via public IP (thanks [Neu.ro](https://neu.ro) for adding the A-records into their DNS table for getting cool `.neu.ro` domain names!). See [./gcp](./gcp) for details. Thanks [@artem-yushkovsky](https://github.com/artem-yushkovsky) for setting this up! :cowboy_hat_face:
 
 ```bash
 $ kubectl -n mlflow get all             
