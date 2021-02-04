@@ -20,7 +20,7 @@ predicts = Table(
     Column("text", String(length=1024 * 5)),
     Column("is_positive_user_answered", Boolean),
     Column("is_positive_model_answered", Boolean),
-    Column("model_run_id", String(length=32)),
+    Column("mlflow_run_id", String(length=32)),
     Column("timestamp", DateTime, default=func.now(), nullable=False),
 )
 

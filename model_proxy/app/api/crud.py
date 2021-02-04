@@ -1,4 +1,4 @@
-from app.api.models import PredictRequestSchema,PredictResponseSchema
+from app.api.models import PredictResponseSchema
 from app.db import database, predicts
 
 
@@ -7,7 +7,7 @@ async def post(payload: PredictResponseSchema):
         text=payload.text,
         is_positive_user_answered=payload.is_positive_user_answered,
         is_positive_model_answered=payload.is_positive_model_answered,
-        model_run_id=payload.model_run_id,
+        mlflow_run_id=payload.mlflow_run_id,
     )
     return await database.execute(query=query)
 

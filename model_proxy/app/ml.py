@@ -11,7 +11,7 @@ def model_predict(text: str):
     r = requests.post(f"{MODEL_URI}/predict", json={"text": text})
     r.raise_for_status()
     output = r.json()
-    logger.debug(f"Received model output: '{output}'")
+    logger.info(f"Received model output: '{output}'")
     return {
             "text": output["text"],
             "is_positive_review": output["is_positive_review"],

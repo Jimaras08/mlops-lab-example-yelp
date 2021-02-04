@@ -1,17 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mlflow-seldon-synchronizer
-  #namespace: mlflow-seldon
+  name: mlflow-model-proxy
 spec:
   selector:
     matchLabels:
-      run: mlflow-seldon-synchronizer
+      run: mlflow-model-proxy
   replicas: 1
   template:
     metadata:
       labels:
-        run: mlflow-seldon-synchronizer
+        run: mlflow-model-proxy
     spec:
       volumes:
         - name: sources
@@ -22,6 +21,11 @@ spec:
           volumeMounts:
             - name: sources
               mountPath: /sources
+          env:
+            - name: GIT_REPO
+              value: https://github.com/dmangonakis/Yelp_Dataset.git
+            - name: GIT_BRANCH
+              value: "${GIT_BRANCH}"  # to be set via envsubst
           command:
             - "/bin/bash"
             - "-euo"
@@ -35,7 +39,7 @@ spec:
               && ls /sources
       containers:
         - name: main
-          image: "${IMAGE_GCR}"  # to be set via envsubst
+          image: gcr.io/mlops-lab1-team3/yelp-dataset/model-proxy:v1.0
           ports:
           - containerPort: 8080
           volumeMounts:
@@ -45,9 +49,7 @@ spec:
             - name: POSTGRES_HOST
               value: "${POSTGRES_HOST}"  # to be set via envsubst
             - name: POSTGRES_PORT
-              value: "5432"
-            - name: POSTGRES_DATABASE
-              value: "mlflow-inference"
+              value: "${POSTGRES_PORT}"  # to be set via envsubst
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
@@ -58,10 +60,21 @@ spec:
                 secretKeyRef:
                   name: postgres-config
                   key: password
+            - name: POSTGRES_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-config
+                  key: database
             - name: MODEL_HOST
-              value: "???"
+              value: "${MODEL_HOST}"  # to be set via envsubst
             - name: MODEL_PORT
+              value: "${MODEL_PORT}"  # to be set via envsubst
+            - name: SERVER_HOST
+              value: "0.0.0.0"
+            - name: SERVER_PORT
               value: "8080"
+            - name: SERVER_NUM_WORKERS
+              value: "2"
           command:
             - "/bin/bash"
             - "-euo"
@@ -72,4 +85,8 @@ spec:
               && env | grep MODEL_
               && env | grep POSTGRES_ | grep -v _PASSWORD
               && cd /sources/model_proxy
-              && uvicorn app.main:app --host 0.0.0.0 --port 8080 --access-log --use-colors
+              && uvicorn app.main:app \
+                  --host ${SERVER_HOST} \
+                  --port ${SERVER_PORT} \
+                  --workers ${SERVER_NUM_WORKERS} \
+                  --log-level=debug

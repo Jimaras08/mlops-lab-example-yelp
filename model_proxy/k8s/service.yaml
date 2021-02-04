@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: mlflow-seldon-synchronizer
+  name: mlflow-model-proxy
   labels:
-    run: mlflow-seldon-synchronizer
+    run: mlflow-model-proxy
 spec:
   type: LoadBalancer
   ports:
@@ -11,4 +11,4 @@ spec:
     targetPort: 8080
     protocol: TCP
   selector:
-    run: mlflow-seldon-synchronizer
+    run: mlflow-model-proxy

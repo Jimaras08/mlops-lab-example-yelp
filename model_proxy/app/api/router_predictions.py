@@ -17,7 +17,7 @@ async def create_prediction(payload: PredictRequestSchema):
         text=text,
         is_positive_user_answered=payload.is_positive_user_answered,
         is_positive_model_answered=output["is_positive_review"] == 1,
-        model_run_id=output["details"]["model_run_id"],
+        mlflow_run_id=output["details"]["mlflow_run_id"],
     )
     pred_id = await crud.post(prediction)
 
@@ -29,7 +29,7 @@ async def create_prediction(payload: PredictRequestSchema):
             "model_answered": prediction.is_positive_model_answered,
         },
         "details": {
-            "mlflow_run_id": prediction.model_run_id,
+            "mlflow_run_id": prediction.mlflow_run_id,
             "timestamp": prediction.timestamp,
         }
     }

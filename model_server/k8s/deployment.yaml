@@ -107,5 +107,4 @@ spec:
                   --host ${SERVER_HOST} \
                   --port ${SERVER_PORT} \
                   --workers ${SERVER_NUM_WORKERS} \
-                  --access-log \
-                  --use-colors
+                  --log-level=debug

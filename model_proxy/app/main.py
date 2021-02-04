@@ -1,6 +1,9 @@
+import logging
+
 from fastapi import FastAPI
 
 from app.api import router_ping, router_predictions, router_statistics
+from app.constants import DEBUG
 from app.db import database, engine, metadata
 
 metadata.create_all(engine)
