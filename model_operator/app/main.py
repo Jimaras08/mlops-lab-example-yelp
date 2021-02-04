@@ -18,9 +18,11 @@ from app.constants import (
     MS_CONFIGMAP_TEMPLATE,
     MS_DEPLOYMENT_PATH,
     MS_CONFIGMAP_NAME,
-    MS_DEPLOYMENT_NAME, MS_DEPLOYMENT_TEMPLATE_PATH,
+    MS_DEPLOYMENT_NAME,
+    MS_DEPLOYMENT_TEMPLATE_PATH,
     POLLER_DELAY,
-    MS_DEPLOYMENT_TEMPLATE)
+    MS_DEPLOYMENT_TEMPLATE,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -60,14 +62,20 @@ def _poll_once(
         subprocess.run(f"{k} apply -f {configmap_path}", shell=True, check=True)
 
         # No zero-downtime :(
-        subprocess.run(f"{k} delete deployment {MS_DEPLOYMENT_NAME}", shell=True, check=True)
+        subprocess.run(
+            f"{k} delete --ignore-not-found deployment {MS_DEPLOYMENT_NAME}",
+            shell=True,
+            check=True,
+        )
         subprocess.run(
             f"envsubst '$$GIT_BRANCH' < {MS_DEPLOYMENT_PATH} | {k} apply -f -",
             shell=True,
             check=True,
         )
         logger.info(f"")
-        logger.info(f"[+] Successfully patched model deployment to run_id={m.run_id} version={m.version}")
+        logger.info(
+            f"[+] Successfully patched model deployment to run_id={m.run_id} version={m.version}"
+        )
         logger.info(f"")
 
     return m.run_id

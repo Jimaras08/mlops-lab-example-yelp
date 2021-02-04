@@ -15,15 +15,18 @@ MLOps Community Lab 1: Team 3: Yelp Review Classification
 The [first lab](https://github.com/mlopscommunity/engineering.labs/tree/master/Lab1_Operationalizing_Pytorch_with_Mlflow) was about integration of [PyTorch](https://pytorch.org/) with [MLflow](https://mlflow.org/). The ML problem to tackle was a free choice.
 
 ## Model Development
-Our team chose the Review classification problem based on [Yelp Dataset](https://www.yelp.com/dataset). The data consists of the list of reviews on restaurant, museums, hospitals, etc., and the number of stars associated with this review (0-5). We model this task as a classification problem: is the review positive (has >=3 stars) or negative (has <3 stars). Following the [torchtext tutorial](https://pytorch.org/tutorials/beginner/text_sentiment_ngrams_tutorial.html), we implemented a model consisting of 2 layers: `EmbeddingBag` and the linear layer. Please find the code in [./src](./src). Many thanks to @paulomaia20 for handling this part :pray:.
+Our team chose the Review classification problem based on [Yelp Dataset](https://www.yelp.com/dataset). The data consists of the list of reviews on restaurant, museums, hospitals, etc., and the number of stars associated with this review (0-5). We model this task as a classification problem: is the review positive (has >=3 stars) or negative (has <3 stars). Following the [torchtext tutorial](https://pytorch.org/tutorials/beginner/text_sentiment_ngrams_tutorial.html), we implemented a model consisting of 2 layers: `EmbeddingBag` and the linear layer. Please find the code in [./src](./src). Many thanks to @paulomaia20 for handling this! :nerd_face:
 
 ## Web UI
-First of all, we implemented a small web UI with [Streamlit](https://www.streamlit.io/) that defined the final goal of the project:
+First of all, we implemented a small Web UI with [Streamlit](https://www.streamlit.io/) that defined the final goal of the project:
 
 ![streamlit](img/streamlit.png)
 
+This Web UI is written in somewhat 50 lines of Python code! It uses REST API to access the deployed Model Proxy service, which provides both model inference and statistics calculation. The Web UI is deployed via [Streamlit Sharing](https://blog.streamlit.io/introducing-streamlit-sharing/). Thanks @dmangonakis for the implementation! :sunglasses:
+
+
 ## Infrastructure
-We absolutely :heart: [Kubernetes](https://kubernetes.io/). And for this task, we couldn't resist not to use it. So we created a kubernetes cluster in GCP (thanks Google for [$300 free credit](https://cloud.google.com/free)), used [helm charts](https://larribas.me/helm-charts) to deploy MLflow server backed by managed PostgreSQL database as backend store and GCS bucket as artifact store. All services were exposed via public IP (thanks [Neu.ro](https://neu.ro) for adding the A-records into their DNS table for getting cool `.neu.ro` domain names!). See [./gcp](./gcp) for details. Thanks @artem-yushkovsky for setting this up!
+We absolutely :heart: [Kubernetes](https://kubernetes.io/). And for this task, we couldn't resist not to use it. So we created a kubernetes cluster in GCP (thanks Google for [$300 free credit](https://cloud.google.com/free)), used [helm charts](https://larribas.me/helm-charts) to deploy MLflow server backed by managed PostgreSQL database as backend store and GCS bucket as artifact store. All services were exposed via public IP (thanks [Neu.ro](https://neu.ro) for adding the A-records into their DNS table for getting cool `.neu.ro` domain names!). See [./gcp](./gcp) for details. Thanks @artem-yushkovsky for setting this up! :cowboy_hat_face:
 
 ```bash
 $ kubectl -n mlflow get all             
@@ -68,6 +71,9 @@ replicaset.apps/mlflow-model-server-6f46cdd48f    1         1         1       14
 Unfortunately, GCP free tier account doesn't include GPU resources to train models. Fortunately, there exist many other places where you can get computational resources for free. Thanks to [NILG.AI](https://nilg.ai/) for providing their servers to develop the model, and thanks to [Neu.ro](https://neu.ro) with their free $100 GPU quota we used to train the model. Please find the scripts in [./scripts/neuro](./scripts/neuro).
 
 ```bash
+$ sh ./scripts/neuro/gpu_train.sh
+...
+
 + neuro run --name yelp-train --preset gpu-small-p --volume storage:yelp_dataset:/project:rw --volume secret:bucket-sa-key:/opt/developers-key.json --env PYTHONPATH=/project --env GOOGLE_APPLICATION_CREDENTIALS=/opt/developers-key.json --env MLFLOW_TRACKING_URI=http://mlflow.lab1-team3.neu.ro:5000 --env GIT_PYTHON_REFRESH=quiet --detach gcr.io/mlops-lab1-team3/yelp-dataset/model:v1.0 mlflow run /project --no-conda -P max_epochs=15
 √ Job ID: job-1676f810-0d1c-47ff-8b82-00d5a4bb35c2
 √ Name: yelp-train
@@ -77,15 +83,7 @@ Unfortunately, GCP free tier account doesn't include GPU resources to train mode
 - Status: pending Initializing
 - Status: pending ContainerCreating
 √ Http URL: https://yelp-train--artemyushkovskiy.jobs.neuro-compute.org.neu.ro
-√ The job will die in a day. See --life-span option documentation for details.
 √ Status: running                                                                              
-+ echo
-
-+ echo 'Server is running, please DO NOT FORGET TO KILL IT: '\''neuro kill yelp-train'\'''
-Server is running, please DO NOT FORGET TO KILL IT: 'neuro kill yelp-train'
-+ echo
-
-+ neuro logs yelp-train
 2021/02/04 20:14:55 INFO mlflow.projects.utils: === Created directory /tmp/tmp80iddg3c for downloading remote URIs passed to arguments of type 'path' ===
 2021/02/04 20:14:55 INFO mlflow.projects.backend.local: === Running command 'python3 -u src/train.py --n_grams 1 --batch_size 32 --embed_dim 32 --max_epochs 15' in run with ID '59e1f3764f6f44d9aeea13e10395ea5d' === 
 2021-02-04 20:14:58,124 - INFO - utils.py:download_from_url - Downloading from Google Drive; may take a few minutes
@@ -116,7 +114,11 @@ LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
 14.9 M    Trainable params
 0         Non-trainable params
 14.9 M    Total params
-Epoch 6:  16% 3040/18688 [00:19<01:42, 152.61it/s, loss=0.186, v_num=5]  
+Epoch 12: 100% 18688/18688 [02:21<00:00, 132.31it/s, loss=0.194, v_num=5]
+Registered model 'yelp-model' already exists. Creating a new version of this model...
+2021/02/04 20:49:08 INFO mlflow.tracking._model_registry.client: Waiting up to 300 seconds for model version to finish creation.                     Model name: yelp-model, version 10
+Created version '10' of model 'yelp-model'.
+2021/02/04 20:49:12 INFO mlflow.projects: === Run (ID '59e1f3764f6f44d9aeea13e10395ea5d') succeeded ===
 ```
 
 ## Model and Experiment tracking
@@ -136,7 +138,7 @@ Forwarding from 127.0.0.1:8080 -> 8080
 Forwarding from [::1]:8080 -> 8080
 ...
 
-$ curl -X POST -H "Content-Type: application/json" -d '{"text": "very cool restaurant!"}' http://localhost:8080/predict | jq
+$ curl -s -X POST -H "Content-Type: application/json" -d '{"text": "very cool restaurant!"}' http://localhost:8080/predict | jq
 {
   "text": "very cool restaurant!",
   "is_positive_review": 1,
@@ -149,7 +151,61 @@ $ curl -X POST -H "Content-Type: application/json" -d '{"text": "very cool resta
 This service is running in Kubernetes as a 1-replica deployment with a service providing load balancing with a static internal IP, so, if needed, it can be easily scaled horizontally. Thanks @artem-yushkovsky :tada:
 
 ## Model Proxy
+In order to add some business-logic to the model deployment, we implemented an additional abstraction layer - the model proxy. It's a thicker REST API service with access to a PostgreSQL database to store and serve prediction results. This service accesses the model via REST API over internal network and calculates some small statistics on the prediction correctness:
 
+```bash
+$ curl -s -X POST -H "Content-Type: application/json" -d '{"text": "very good cafe", "is_positive_user_answered": true}' http://model-proxy.lab1-team3.neu.ro/predictions | jq 
+{
+  "id": 40,
+  "text": "very good cafe",
+  "is_positive": {
+    "user_answered": true,
+    "model_answered": true
+  },
+  "details": {
+    "mlflow_run_id": "3acade02674549b19044a59186d97db4",
+    "inference_elapsed": 0.0009300708770751953,
+    "timestamp": "2021-02-04T20:46:49.484379"
+  }
+}
+```
+```bash
+$ curl -s http://model-proxy.lab1-team3.neu.ro/predictions | jq
+[
+...
+  {
+    "text": "very good cafe",
+    "is_positive_user_answered": true,
+    "is_positive_model_answered": true,
+    "mlflow_run_id": "3acade02674549b19044a59186d97db4",
+    "inference_elapsed": 0.0009300708770751953,
+    "timestamp": "2021-02-04T20:46:49.484379",
+    "id": 40
+  },
+...
+]
+
+```
+```bash
+$ curl -s http://model-proxy.lab1-team3.neu.ro/statistics | jq    
+{
+  "statistics": {
+    "correctness_rate": 0.85
+  }
+}
+```
+Though this service does not implement any kind of authentication, and though its statistics calculation is rather straightforward, it serves the demo purposes well. Please find the code in [./model_proxy](./model_proxy). Kudos @artem-yushkovsky! :partying_face:
+
+## Model Operator
+In order to add more MLOps flow to the project, we decided to implement a microservice that implements GitOps for MLflow: meet Model Operator! it constantly polls MLflow server to see which model has `Production` tag. Once this tag has changed, it changes the Model Server deployment in Kubernates and thus re-deploys the model. To illustrate this process, we exposed the logs of this service via [Webtail](https://github.com/LeKovr/webtail).
+
+For example, we want to deploy the recently trained model of version 10. In MLflow UI, we change its `Stage` to `Production`:
+
+![mlflow-deploy](img/mlflow-deploy.png) 
+
+This automatically triggers the model deployment:
+
+![]
 
 
 ## Awesome Team 3
