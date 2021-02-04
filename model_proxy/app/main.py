@@ -23,5 +23,7 @@ async def shutdown():
 
 
 app.include_router(router_ping.router)
-app.include_router(router_predictions.router, prefix="/predictions", tags=["predictions"])
+app.include_router(
+    router_predictions.router, prefix="/predictions", tags=["predictions"]
+)
 app.include_router(router_statistics.router, prefix="/statistics", tags=["statistics"])

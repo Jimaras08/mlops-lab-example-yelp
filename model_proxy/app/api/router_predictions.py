@@ -31,7 +31,7 @@ async def create_prediction(payload: PredictRequestSchema):
         "details": {
             "mlflow_run_id": prediction.mlflow_run_id,
             "timestamp": prediction.timestamp,
-        }
+        },
     }
     return response_object
 

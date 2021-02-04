@@ -13,9 +13,9 @@ def model_predict(text: str):
     output = r.json()
     logger.info(f"Received model output: '{output}'")
     return {
-            "text": output["text"],
-            "is_positive_review": output["is_positive_review"],
-            "details": {
-                "mlflow_run_id": output["details"]["mlflow_run_id"],
-            },
-        }
+        "text": output["text"],
+        "is_positive_review": output["is_positive_review"],
+        "details": {
+            "mlflow_run_id": output["details"]["mlflow_run_id"],
+        },
+    }

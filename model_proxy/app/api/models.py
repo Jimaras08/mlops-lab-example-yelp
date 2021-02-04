@@ -13,5 +13,6 @@ class PredictResponseSchema(PredictRequestSchema):
     mlflow_run_id: str = Field(..., min_length=32, max_length=32)
     timestamp: datetime
 
+
 class PredictDB(PredictResponseSchema):
     id: int

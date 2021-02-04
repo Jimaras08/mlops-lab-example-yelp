@@ -1,8 +1,17 @@
 import logging
 
 from databases import Database
-from sqlalchemy import Boolean, Column, Integer, MetaData, String, Table, create_engine, \
-    DateTime, func
+from sqlalchemy import (
+    Boolean,
+    Column,
+    Integer,
+    MetaData,
+    String,
+    Table,
+    create_engine,
+    DateTime,
+    func,
+)
 
 from app.constants import DATABASE_URL, POSTGRES_TABLE
 
