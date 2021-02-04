@@ -194,7 +194,7 @@ $ curl -s http://model-proxy.lab1-team3.neu.ro/statistics | jq
   }
 }
 ```
-Though this service does not implement any kind of authentication, and though its statistics calculation is rather straightforward (also, we would consider a distributed logging system based on ELK stack a better solution for adding business-level metadata to the model server), it serves the demo purposes well. Please find the code in [./model_proxy](./model_proxy). Kudos [@artem-yushkovsky](https://github.com/artem-yushkovsky]! :partying_face:
+Though this service does not implement any kind of authentication, and though its statistics calculation is rather straightforward (also, we would consider a distributed logging system based on ELK stack a better solution for adding business-level metadata to the model server), it serves the demo purposes well. Please find the code in [./model_proxy](./model_proxy). Kudos [@artem-yushkovsky](https://github.com/artem-yushkovsky)! :partying_face:
 
 ## Model Operator
 In order to add more MLOps flow to the project, we decided to implement a microservice that implements GitOps for MLflow: meet Model Operator! This service follows the [Kubernetes Operator pattern](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/) and constantly polls MLflow server to see which model has `Production` tag. Once this tag has changed, it changes the Model Server deployment in Kubernates and thus re-deploys the model. To illustrate this process, we exposed the logs of this service via [Webtail](https://github.com/LeKovr/webtail).
