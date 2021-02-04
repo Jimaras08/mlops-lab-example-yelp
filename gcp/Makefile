@@ -18,3 +18,5 @@ push-mlflow-image:
 	gcloud auth configure-docker
 	docker tag $(IMAGE_LOCAL) $(IMAGE_GCR)
 	docker push $(IMAGE_GCR)
+
+# TODO: move some commands from Readme to Makefile
