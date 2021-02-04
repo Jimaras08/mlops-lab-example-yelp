@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mlflow-seldon-synchronizer
+  #namespace: mlflow-seldon
+spec:
+  selector:
+    matchLabels:
+      run: mlflow-seldon-synchronizer
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: mlflow-seldon-synchronizer
+    spec:
+      volumes:
+        - name: sources
+          emptyDir: {}
+      initContainers:
+        - name: git-clone
+          image: python:3.7
+          volumeMounts:
+            - name: sources
+              mountPath: /sources
+          command:
+            - "/bin/bash"
+            - "-euo"
+            - "xtrace"
+            - "-c"
+            # Note: ${GIT_REPO} and ${GIT_BRANCH} to be set via envsubst
+            - >-
+              echo "Installing the app: ${GIT_REPO}@${GIT_BRANCH}"
+              && git clone --branch $GIT_BRANCH ${GIT_REPO} /tmp/project
+              && mv /tmp/project/model_proxy /sources
+              && ls /sources
+      containers:
+        - name: main
+          image: "${IMAGE_GCR}"  # to be set via envsubst
+          ports:
+          - containerPort: 8080
+          volumeMounts:
+            - name: sources
+              mountPath: /sources
+          env:
+            - name: POSTGRES_HOST
+              value: "${POSTGRES_HOST}"  # to be set via envsubst
+            - name: POSTGRES_PORT
+              value: "5432"
+            - name: POSTGRES_DATABASE
+              value: "mlflow-inference"
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-config
+                  key: user
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-config
+                  key: password
+            - name: MODEL_HOST
+              value: "???"
+            - name: MODEL_PORT
+              value: "8080"
+          command:
+            - "/bin/bash"
+            - "-euo"
+            - "xtrace"
+            - "-c"
+            - >-
+              echo "Running the app"
+              && env | grep MODEL_
+              && env | grep POSTGRES_ | grep -v _PASSWORD
+              && cd /sources/model_proxy
+              && uvicorn app.main:app --host 0.0.0.0 --port 8080 --access-log --use-colors

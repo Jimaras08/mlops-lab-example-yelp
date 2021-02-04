@@ -38,7 +38,7 @@ async def predict(input: ModelInput):
         return {
             "text": input.dict(exclude_unset=True),
             "is_positive_review": model_output,
-            "model": {
+            "details": {
                 "mlflow_run_id": MLFLOW_MODEL_RUN_ID,
             },
         }
