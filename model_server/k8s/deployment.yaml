@@ -10,7 +10,6 @@ spec:
   replicas: 1
   strategy:
     type: RollingUpdate
-    # TODO: max availablilty
   template:
     metadata:
       labels:
@@ -25,9 +24,8 @@ spec:
         - name: git-clone
           image: python:3.7
           env:
-            # TODO: use shared configmap
             - name: GIT_REPO
-              value: https://github.com/dmangonakis/Yelp_Dataset.git
+              value: https://github.com/dmangonakis/mlops-community-lab1-team3-yelp.git
             - name: GIT_BRANCH
               value: "${GIT_BRANCH}"  # to be set via envsubst
           volumeMounts:
