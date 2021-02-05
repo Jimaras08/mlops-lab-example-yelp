@@ -14,7 +14,7 @@ MLOps Community Lab 1: Team 3: Yelp Review Classification
 The [first lab](https://github.com/mlopscommunity/engineering.labs/tree/master/Lab1_Operationalizing_Pytorch_with_Mlflow) was about integration of [PyTorch](https://pytorch.org/) with [MLflow](https://mlflow.org/). The ML problem to tackle was a free choice.
 
 ## Model Development
-Our team chose the Review classification problem based on [Yelp Dataset](https://www.yelp.com/dataset). The data consists of the list of reviews on restaurant, museums, hospitals, etc., and the number of stars associated with this review (0-5). We model this task as a binary classification problem: is the review positive (has >=3 stars) or negative (has <3 stars). Following the [torchtext tutorial](https://pytorch.org/tutorials/beginner/text_sentiment_ngrams_tutorial.html), we implemented a model consisting of 2 layers: `EmbeddingBag` and a linear layer, followed by a sigmoid activation function (using [PyTorch Lightning](https://github.com/PyTorchLightning/pytorch-lightning). Please find the code in [./src](./src). Many thanks to [@paulomaia20](https://github.com/paulomaia20) for handling this! :nerd_face:
+Our team chose the Review classification problem based on [Yelp Dataset](https://www.yelp.com/dataset). The data consists of the list of reviews on restaurant, museums, hospitals, etc., and the number of stars associated with this review (0-5). We model this task as a binary classification problem: is the review positive (has >=3 stars) or negative (has <3 stars). Following the [torchtext tutorial](https://pytorch.org/tutorials/beginner/text_sentiment_ngrams_tutorial.html), we implemented a model consisting of 2 layers: `EmbeddingBag` and a linear layer, followed by a sigmoid activation function (using [PyTorch Lightning](https://github.com/PyTorchLightning/pytorch-lightning)). Please find the code in [./src](./src). Many thanks to [@paulomaia20](https://github.com/paulomaia20) for handling this! :nerd_face:
 
 ## Web UI
 First of all, we implemented a small Web UI with [Streamlit](https://www.streamlit.io/) that defined the final goal of the project:
@@ -41,29 +41,6 @@ deployment.apps/mlflow   1/1     1            1           11d
 NAME                                DESIRED   CURRENT   READY   AGE
 replicaset.apps/mlflow-57c5fcd4df   1         1         1       16h
 replicaset.apps/mlflow-7686588c6b   0         0         0       11d
-```
-
-```bash
-$ kubectl -n mlflow-model get all
-NAME                                        READY   STATUS    RESTARTS   AGE
-pod/mlflow-model-operator-9c7fbd88b-tcx5j   3/3     Running   0          14h
-pod/mlflow-model-proxy-646d4f9cd6-9xtmc     1/1     Running   0          18h
-pod/mlflow-model-server-6f46cdd48f-85zxq    1/1     Running   0          14h
-
-NAME                            TYPE           CLUSTER-IP      EXTERNAL-IP    PORT(S)        AGE
-service/mlflow-model-operator   LoadBalancer   10.104.2.23     34.91.157.40   80:32328/TCP   15h
-service/mlflow-model-proxy      LoadBalancer   10.104.14.129   34.91.75.82    80:31813/TCP   19h
-service/mlflow-model-server     ClusterIP      10.104.5.80     <none>         80/TCP         20h
-
-NAME                                    READY   UP-TO-DATE   AVAILABLE   AGE
-deployment.apps/mlflow-model-operator   1/1     1            1           14h
-deployment.apps/mlflow-model-proxy      1/1     1            1           18h
-deployment.apps/mlflow-model-server     1/1     1            1           14h
-
-NAME                                              DESIRED   CURRENT   READY   AGE
-replicaset.apps/mlflow-model-operator-9c7fbd88b   1         1         1       14h
-replicaset.apps/mlflow-model-proxy-646d4f9cd6     1         1         1       18h
-replicaset.apps/mlflow-model-server-6f46cdd48f    1         1         1       14h
 ```
 
 ## Model training
