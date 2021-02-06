@@ -20,7 +20,6 @@ from app.constants import (
     MS_CONFIGMAP_NAME,
     MS_DEPLOYMENT_NAME,
     POLLER_DELAY,
-    MS_DEPLOYMENT_TEMPLATE,
 )
 
 logger = logging.getLogger(__name__)
