@@ -15,7 +15,7 @@ neuro run \
   --volume secret:bucket-sa-key:/opt/developers-key.json \
   --env PYTHONPATH=/project \
   --env GOOGLE_APPLICATION_CREDENTIALS=/opt/developers-key.json \
-  --env MLFLOW_TRACKING_URI=http://mlflow.lab1-team3.neu.ro:5000 \
+  --env MLFLOW_TRACKING_URI=http://mlflow.lab1-team3.mlops.neu.ro:5000 \
   --env GIT_PYTHON_REFRESH=quiet \
   --detach \
   gcr.io/mlops-lab1-team3/yelp-dataset/model:v1.0 \

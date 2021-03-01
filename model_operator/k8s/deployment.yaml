@@ -74,7 +74,7 @@ spec:
             - name: MODELSERVER_DEPLOYMENT_NAME
               value: mlflow-model-server
             - name: MLFLOW_TRACKING_URI
-              value: http://mlflow.lab1-team3.neu.ro:5000
+              value: http://mlflow.lab1-team3.mlops.neu.ro:5000
             - name: MLFLOW_MODEL_NAME
               value: yelp-model
           command:

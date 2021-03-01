@@ -13,7 +13,7 @@ from sqlalchemy import create_engine
 #    "postgres://zbdsjugqjjajzs:67e43133445a6275d249d85bfaca56076f79d410a93050da65dcc585df747498@ec2-54-246-89-234.eu-west-1.compute.amazonaws.com:5432/db609fft9r2h1t"
 #)
 
-API_ENDPOINT = 'http://model-proxy.lab1-team3.neu.ro'
+API_ENDPOINT = 'http://model-proxy.lab1-team3.mlops.neu.ro'
 
 ### Frontend ###
 # image = Image.open("src/app/yelp.png")
@@ -69,7 +69,7 @@ if st.button("Let me tell you!") and user_input:
 
     try:
         raw_output = requests.get(f"{API_ENDPOINT}/statistics").json()
-        # $ curl http://model-proxy.lab1-team3.neu.ro/statistics
+        # $ curl http://model-proxy.lab1-team3.mlops.neu.ro/statistics
         # {"statistics":{"correctness_rate":0.8}}
         rate = raw_output["statistics"]["correctness_rate"] * 100
         st.write(f"Total model correctness rate: {rate:.2f} %")
@@ -79,7 +79,7 @@ if st.button("Let me tell you!") and user_input:
     # # TODO: print a fancy statistics
     # try:
     #     resp_data = requests.get(f"{API_ENDPOINT}/predictions").json()
-    #     # $ curl http://model-proxy.lab1-team3.neu.ro/predictions
+    #     # $ curl http://model-proxy.lab1-team3.mlops.neu.ro/predictions
     #     # [
     #     #  {
     #     #    "text": "somewhat normal cafe",

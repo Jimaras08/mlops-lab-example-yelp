@@ -50,7 +50,7 @@ spec:
               mountPath: /models-root
           env:
             - name: MLFLOW_TRACKING_URI
-              value: http://mlflow.lab1-team3.neu.ro:5000
+              value: http://mlflow.lab1-team3.mlops.neu.ro:5000
             - name: MLFLOW_MODEL_RUN_ID
               valueFrom:
                 configMapKeyRef:

@@ -25,7 +25,7 @@ This Web UI is written in somewhat 50 lines of Python code! It uses REST API to 
 
 
 ## Infrastructure
-We absolutely :heart: [Kubernetes](https://kubernetes.io/). And for this task, we couldn't resist not to use it. So we created a kubernetes cluster in GCP (thanks Google for [$300 free credit](https://cloud.google.com/free)), used [helm charts](https://larribas.me/helm-charts) to deploy MLflow server backed by managed PostgreSQL database as backend store and GCS bucket as artifact store. All services were exposed via public IP (thanks [Neu.ro](https://neu.ro) for adding the A-records into their DNS table for getting cool `.neu.ro` domain names!). See [./gcp](./gcp) for details. Thanks [@artem-yushkovsky](https://github.com/artem-yushkovsky) for setting this up! :cowboy_hat_face:
+We absolutely :heart: [Kubernetes](https://kubernetes.io/). And for this task, we couldn't resist not to use it. So we created a kubernetes cluster in GCP (thanks Google for [$300 free credit](https://cloud.google.com/free)), used [helm charts](https://larribas.me/helm-charts) to deploy MLflow server backed by managed PostgreSQL database as backend store and GCS bucket as artifact store. All services were exposed via public IP (thanks [Neu.ro](https://neu.ro) for adding the A-records into their DNS table for getting cool `.mlops.neu.ro` domain names!). See [./gcp](./gcp) for details. Thanks [@artem-yushkovsky](https://github.com/artem-yushkovsky) for setting this up! :cowboy_hat_face:
 
 ```bash
 $ kubectl -n mlflow get all             
@@ -50,7 +50,7 @@ Unfortunately, GCP free tier account doesn't include GPU resources to train mode
 $ sh ./scripts/neuro/gpu_train.sh
 ...
 
-+ neuro run --name yelp-train --preset gpu-small-p --volume storage:yelp_dataset:/project:rw --volume secret:bucket-sa-key:/opt/developers-key.json --env PYTHONPATH=/project --env GOOGLE_APPLICATION_CREDENTIALS=/opt/developers-key.json --env MLFLOW_TRACKING_URI=http://mlflow.lab1-team3.neu.ro:5000 --env GIT_PYTHON_REFRESH=quiet --detach gcr.io/mlops-lab1-team3/yelp-dataset/model:v1.0 mlflow run /project --no-conda -P max_epochs=15
++ neuro run --name yelp-train --preset gpu-small-p --volume storage:yelp_dataset:/project:rw --volume secret:bucket-sa-key:/opt/developers-key.json --env PYTHONPATH=/project --env GOOGLE_APPLICATION_CREDENTIALS=/opt/developers-key.json --env MLFLOW_TRACKING_URI=http://mlflow.lab1-team3.mlops.neu.ro:5000 --env GIT_PYTHON_REFRESH=quiet --detach gcr.io/mlops-lab1-team3/yelp-dataset/model:v1.0 mlflow run /project --no-conda -P max_epochs=15
 √ Job ID: job-1676f810-0d1c-47ff-8b82-00d5a4bb35c2
 √ Name: yelp-train
 - Status: pending Creating
@@ -130,7 +130,7 @@ This service is running in Kubernetes as a 1-replica deployment with a service p
 In order to add some business-logic to the model deployment, we implemented an additional abstraction layer - the model proxy. It's a thicker REST API service with access to a PostgreSQL database to store and serve prediction results. This service accesses the model via REST API over internal network and calculates some small statistics on the prediction correctness:
 
 ```bash
-$ curl -s -X POST -H "Content-Type: application/json" -d '{"text": "very good cafe", "is_positive_user_answered": true}' http://model-proxy.lab1-team3.neu.ro/predictions | jq 
+$ curl -s -X POST -H "Content-Type: application/json" -d '{"text": "very good cafe", "is_positive_user_answered": true}' http://model-proxy.lab1-team3.mlops.mlops.neu.ro/predictions | jq 
 {
   "id": 40,
   "text": "very good cafe",
@@ -146,7 +146,7 @@ $ curl -s -X POST -H "Content-Type: application/json" -d '{"text": "very good ca
 }
 ```
 ```bash
-$ curl -s http://model-proxy.lab1-team3.neu.ro/predictions | jq
+$ curl -s http://model-proxy.lab1-team3.mlops.neu.ro/predictions | jq
 [
 ...
   {
@@ -163,7 +163,7 @@ $ curl -s http://model-proxy.lab1-team3.neu.ro/predictions | jq
 
 ```
 ```bash
-$ curl -s http://model-proxy.lab1-team3.neu.ro/statistics | jq    
+$ curl -s http://model-proxy.lab1-team3.mlops.neu.ro/statistics | jq    
 {
   "statistics": {
     "correctness_rate": 0.85
