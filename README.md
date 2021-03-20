@@ -1,6 +1,8 @@
 MLOps Community Lab 1: Team 3: Yelp Review Classification
 =========================================================
 
+Please find more info in our [Medium article](https://medium.com/mlops-community/engineering-lab-1-team-3-when-pytorch-meets-mlflow-for-review-classification-1971f8d5336e) 🙃
+
 # Awesome MLOps Community
 [MLOps Community](https://mlops.community/) :tada: is an open, free and transparent place for MLOps practitioners can collaborate on experiences and best practices around MLOps (DevOps for ML).
 
